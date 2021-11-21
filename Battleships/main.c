@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "constans.h"
 #include "commands.h"
+#include "constans.h"
 
 
 
