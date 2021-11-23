@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClCompile Include="board.c" />
     <ClCompile Include="commands.c" />
+    <ClCompile Include="constants.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="ship.c" />
   </ItemGroup>
@@ -148,6 +149,7 @@
     <ClInclude Include="board.h" />
     <ClInclude Include="commands.h" />
     <ClInclude Include="constants.h" />
+    <ClInclude Include="player.h" />
     <ClInclude Include="ship.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

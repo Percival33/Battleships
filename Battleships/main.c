@@ -2,18 +2,19 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 
 #include "board.h"
 #include "commands.h"
 #include "constants.h"
+#include "ship.h"
+#include "player.h"
 
 int main() {
 
 	int quit = 0;
-	int event;
+	int event = C_NULL;
 	int commandId;
-	int activeCommand = 0;
+	int activeCommandType = C_NULL;
 
 	const int ROWS = 21;
 	const int COLS = 10;
@@ -23,59 +24,48 @@ int main() {
 
 	board_t** board = board_init(ROWS, COLS);
 	
-	//board_print(board, ROWS, COLS);
-	//printf("liczba: %d\n", get_number("PLACE_SHIP 12 4 N 1 CAT", strlen("PLACE_SHIP")+1));
-	printf("liczba: %d\n", validate_place_ship("PLACE_SHIP 12 4 N 1 DES", ROWS, COLS));
-	//gets(command);
-	//printf("liczba: %d\n", validate_place_ship(command, ROWS, COLS));
+	player_t playerA = { 0, 9 };
+	player_t playerB = { 11, 20 };
 
+//	place_ship(board, "PLACE_SHIP 12 4 N 1 DES", &playerA);
+//	printf("czy DES: %d", get_class("DES"));
+	
 	while (!quit) {
 
 		gets(command);
 
-		commandId = get_command_type(&command);
-
-		switch (commandId) {
-
-		case C_STATE:
-			event = handle_command_type(&command, &activeCommand, C_STATE);
-			if (event == C_IN) {
-				printf("command: %d type: %d\n", C_STATE, C_IN);
+		if (activeCommandType != C_NULL) { // type of commands is specified
+			switch (activeCommandType) {
+				case C_STATE:
+					// handles and validates all state commands 
+					break;
+				case C_PLAYER_A:
+					// handles and validates all player_a commands
+					break;
+				case C_PLAYER_B:
+					// handles and validates all player_b commands
+					break;
 			}
-			else if (event == C_OUT) {
-				printf("command: %d type: %d\n", C_STATE, C_IN);
-			}
-			break;
-
-		case C_PLAYER_A:
-
-			event = handle_command_type(command, &activeCommand, C_PLAYER_A);
-			if (event == C_IN) {
-
-			}
-			else if (event == C_OUT) {
-
-			}
-			break;
-
-		case C_PLAYER_B:
-			event = handle_command_type(command, &activeCommand, C_PLAYER_B);
-			if (event == C_IN) {
-
-			}
-			else if (event == C_OUT) {
-
-			}
-			break;
-
-		case C_QUIT:
-			quit = 1;
-			break;
-
-		default:
-			printf("INPUT CORRECT COMMAND\n");
-			break;
 		}
+		else {
+			commandId = get_command_type(&command);
+			
+			if (commandId == C_QUIT) {
+				quit = 1;
+				continue;
+			}
+
+			//event = handle_command_type(command, &activeCommandType, commandId);
+			//TODO: merge get_command_type with handle_command_type
+		
+			if (event == C_INVALID) {
+				handle_invalid_command(command, activeCommandType);
+			}
+			else {
+				printf("event: %d acitveCommand: %d\n", event, activeCommandType);
+			}
+
+		}	
 	}
 
 	board_free(board, ROWS);

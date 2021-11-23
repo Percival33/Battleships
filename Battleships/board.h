@@ -1,6 +1,8 @@
 #pragma once
 
-typedef struct {
+typedef struct board {
+	int rows;
+	int cols;
 	int type;
 }board_t;
 

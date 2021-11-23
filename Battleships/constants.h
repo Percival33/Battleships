@@ -7,6 +7,16 @@
 			- 
 */
 
+const char STATE[];
+const char PLAYER_A[];
+const char PLAYER_B[];
+const char PLACE_SHIP[];
+
+const char SHIP_NOT_ON_POSITION[];
+const char SHIP_PRESENT[];
+const char SHIP_ALL_SET[];
+const char OTHER_PLAYER_EXPECTED[];
+
 typedef struct {
 	int x;
 	int y;
@@ -17,22 +27,24 @@ enum Consts {
 	False = 0
 };
 
-enum Commands { // values from 100 except 'Q' and C_NULL value
+enum Commands { 
 	
-	C_NULL = 0,					// Current command is null
+	C_NULL = -1,					// Current command is null
 	C_QUIT = 'Q',
-	C_STATE = 100,				// state command ID
-	C_PLAYER_A = 101,			// player A command ID
-	C_PLAYER_B = 102,			// player B command ID
-	C_INVALID = 103,			// Invalid command ID
+
+	C_STATE = 0,				// state command ID
+	C_PLAYER_A = 1,			// player A command ID
+	C_PLAYER_B = 2,			// player B command ID
+	C_INVALID = 3,			// Invalid command ID
+	C_PLACE_SHIP = 4,			// Place ship command
+
 	C_IN = 104,					// Switching command type 
 	C_OUT = 105,				// Switching command type
 	C_CORRECT = 106,			// Correct command
-	C_PLACE_SHIP = 107,			// Place ship command
-	
+
 };
 
-enum Ship { // values from 2 to 11
+enum Ship {
 	S_CAR = 5,					// [CAR]RIER size
 	S_BAT = 4,					// [BAT]TLESHIP size
 	S_CRU = 3,					// [CRU]ISER size
@@ -42,14 +54,19 @@ enum Ship { // values from 2 to 11
 	S_SHOOT = 11,				// Shoot command ID
 };
 
-enum Direction { // values from 0 to 3
+enum Direction { 
 	N = 0,
 	E = 1,
 	S = 2,
 	W = 3
 };
 
-enum Board { // values from 200 to 201
+enum Board {
 	B_EMPTY = 200,
 	B_TAKEN = 201
 };
+
+
+int get_dir(char dirChar);
+
+int get_class(char cat[]);

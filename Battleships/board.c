@@ -18,12 +18,9 @@ board_t** board_init(const int ROWS, const int COLS) {
 	for (int i = 0; i < ROWS; i++) {
 		for (int j = 0; j < COLS; j++) {
 			board[i][j].type = B_EMPTY;
+			board[i][j].rows = ROWS;
+			board[i][j].cols = COLS;
 		}
-	}
-
-	for (int i = 0; i < COLS; i++) {
-		board[10][i].type = B_TAKEN;	// assuring that middle row between boards of 
-										// each players is not allowing to place any ship there
 	}
 
 	return board;
