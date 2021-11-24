@@ -121,9 +121,7 @@ int main() {
 					break;
 
 				case C_STATE_TYPE:
-					temp = nextPlayer;
 					handle_state_commands(command, activeCommandType, &nextPlayer);
-					assert(nextPlayer != temp);
 					break;
 
 				case C_PLAYER_TYPE:
