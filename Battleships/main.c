@@ -76,38 +76,82 @@ int main() {
 	char command[101];
 
 	while (!quit) {
+		if (fgets(command, 100, stdin) == NULL)
+			break;
 
-		fgets(command, 100, stdin);
+		if (command[0] == '\n') {
+			continue;
+		}
 
 		commandId = get_command_type(command);
 
-		switch (activeCommandType) {
-			case C_QUIT:
-				quit = 1;
-				break;
+		if (activeCommandType == C_NULL) {
+			if ((commandId == C_PLAYER_A || commandId == C_PLAYER_B)) {
+				if (nextPlayer == C_PLAYER_A && commandId == C_PLAYER_A) {
+					activeCommandType = C_PLAYER_A;
+					nextPlayer = C_PLAYER_B;
+					continue;
+				}
+				else if (nextPlayer == C_PLAYER_B && commandId == C_PLAYER_B) {
+					activeCommandType = C_PLAYER_B;
+					nextPlayer = C_PLAYER_A;
+					continue;
+				}
+				else {
+					handle_invalid_command(command, C_PLAYER_A);
+				}
+			}
+			else if (commandId == C_STATE) {
+				activeCommandType = C_STATE;
+				continue;
+			}
+			else {
+				handle_invalid_command(command, C_INVALID);
+			}
+		}
+		else {
 
+			switch (commandId) {
+				case C_QUIT:
+					quit = 1;
+					break;
 
+				case C_STATE:
+					activeCommandType = C_NULL;
+					break;
 
-			case C_STATE:
-				handle_state_commands(command);
-				break;
+				case C_STATE_TYPE:
+					handle_state_commands(command, activeCommandType);
+					break;
 
-			case C_PLAYER_A:
-				handle_player_command(command);
-				break;
+				case C_PLAYER_TYPE:
+					handle_player_command(command, activeCommandType);
+					break;
+
+				case C_PLAYER_A:
+					if (activeCommandType == C_PLAYER_A) {
+						activeCommandType = C_NULL;
+					}
+					else {
+						handle_invalid_command(command, C_PLAYER_A);
+					}
+					break;
+
+				case C_PLAYER_B:
+					if (activeCommandType == C_PLAYER_B) {
+						activeCommandType = C_NULL;
+					}
+					else {
+						handle_invalid_command(command, C_PLAYER_B);
+					}
+					break;
+
+				case C_INVALID:
+					handle_invalid_command(command, C_INVALID);
+					break;
+			}
+		}
 			
-			case C_PLAYER_B:
-				handle_player_command(command);
-				break;
-
-
-
-
-			case C_INVALID:
-				printf("INVALID COMMAND\n");
-				handle_invalid_command(command, activeCommandType);
-				break;
-		}	
 	}
 
 	fleet_free();

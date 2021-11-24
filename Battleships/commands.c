@@ -31,22 +31,17 @@ int get_command_type(char command[]) {
 		return C_QUIT;
 	}
 
-	else if (is_correct_command(command, PRINT)) {
-		return C_PRINT;
-	}
-	else if (is_correct_command(command, SET_FLEET)) {
-		return C_SET_FLEET;
-	}
-	else if (is_correct_command(command, NEXT_PLAYER)) {
-		return C_NEXT_PLAYER;
-	}
-	else if (is_correct_command(command, PLACE_SHIP)) {
-		return C_PLACE_SHIP;
-	}
-	else if (is_correct_command(command, SHOOT)) {
-		return C_SHOOT;
+	else if ((is_correct_command(command, PRINT)) ||
+		(is_correct_command(command, SET_FLEET)) ||
+		(is_correct_command(command, NEXT_PLAYER))) {
+		return C_STATE_TYPE;
 	}
 
+
+	else if (is_correct_command(command, PLACE_SHIP) ||
+			(is_correct_command(command, SHOOT))) {
+		return C_PLAYER_TYPE;
+	}
 	else {
 		return C_INVALID;
 	}
@@ -56,70 +51,33 @@ void print_invalid_command(char command[], char reason[]) {
 
 }
 
-void handle_invalid_command(char command[], int activeCommandType) {
-	//printf("INVALID OPERATION \"%s \": %s\n", command, reason);
-	
-	/*
-				switch (activeCommandType) {
-					case C_PLAYER_A || C_PLAYER_B:
-						handle_invalid_command(command, OTHER_PLAYER_EXPECTED);
-						break;
-					default:
-						printf("main cos dupa\n");
-						break;
-				}
-	*/
-	
-	switch (activeCommandType) {
-			
+void handle_invalid_command(char command[], int errorType) {
+
+	int len = strlen(command);
+
+	if (errorType == C_PLAYER_A || errorType == C_PLAYER_B) {
+		printf("INVALID OPERATION \"%.*s \": %s\n", len-1, command, OTHER_PLAYER_EXPECTED);
 	}
-	//print_invalid_command(command);
+	else if (errorType == C_INVALID) {
+		printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command, WRONG_COMMAND);
+	}
+	
 	exit(1);
-	return;
 }
 
-int handle_command_type(char command[], int* activeCommand, int commandType) {
-	
-	if (*activeCommand == commandType) {
-		*activeCommand = C_NULL;
-		return C_OUT;
-	}
-	
-	else if (*activeCommand == C_NULL) {
-		*activeCommand = commandType;
-		return C_IN;
-	}
-	printf("zla komenda jakas\n");
-	return C_INVALID;
-}
-
-int get_number(char command[], int* id) {
-	int spaces = 1;
-	char number[10];
-	int i = 0;
-
-	while (*id < strlen(command) && spaces < 2) {
-		if (command[*id] == ' ')
-			spaces++;
-		number[i++] = command[(*id)++];
-	}
-	number[i] = '\0';
-	printf("index: %d\n", *id);
-	return atoi(number);
-}
-
-int handle_player_command(char command[]) {
+int handle_player_command(char command[], int activeCommandType) {
 	if (is_correct_command(command, PLACE_SHIP)) {
-		//
+		
 	}
 	else if (is_correct_command(command, SHOOT)) {
 		
 	}
 	else {
-		handle_invalid_command(); // TODO: pass accurate args
+		handle_invalid_command(command, activeCommandType); // TODO: pass accurate args
 	}
+	return -1;
 }
 
-void handle_state_commands(char command[]) {
+void handle_state_commands(char command[], int activeCommandType) {
 
 }

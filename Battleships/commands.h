@@ -10,7 +10,7 @@ int get_command_type(char command[]);
 	function handles invalid command, calls print_invalid_command and exits program
 	TODO: write body of function
 */
-void handle_invalid_command(char command[], int activeCommandType);
+void handle_invalid_command(char command[], int errorType);
 
 
 /*

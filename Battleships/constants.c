@@ -3,6 +3,7 @@
 const char STATE[] = "[state]";
 const char PLAYER_A[] = "[playerA]";
 const char PLAYER_B[] = "[playerB]";
+const char WRONG_COMMAND[] = "WRONG COMMAND";
 
 const char PRINT[] = "PRINT";
 const char SET_FLEET[] = "SET_FLEET";

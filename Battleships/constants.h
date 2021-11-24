@@ -11,6 +11,7 @@
 const char STATE[];
 const char PLAYER_A[];
 const char PLAYER_B[];
+const char WRONG_COMMAND[];
 
 const char PRINT[];
 const char SET_FLEET[];
@@ -39,15 +40,16 @@ enum Consts {
 	False = 0
 };
 
-enum Commands { 
-	
+enum Commands {
+
 	C_NULL = -1,					// Current command is null
 	C_QUIT = 'Q',
 
 	C_STATE = 0,				// state command ID
 	C_PLAYER_A = 1,			// player A command ID
 	C_PLAYER_B = 2,			// player B command ID
-	
+	C_PLAYER_TYPE = 999,
+	C_STATE_TYPE = 998,
 	C_INVALID = 3,			// Invalid command ID
 	
 	C_PLACE_SHIP = 4,			// Place ship command
