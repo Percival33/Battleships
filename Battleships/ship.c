@@ -1,13 +1,14 @@
+#define _CRT_SECURE_NO_WARNINGS
 /*
 	TODO: create functions to handle:
 			- fleet creation 
 			- ship placing
 			- condition of ships (if it was hit?)
 */
-#define _CRT_SECURE_NO_WARNINGS
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "constants.h"
 #include "ship.h"
@@ -62,51 +63,64 @@ void place_ship(board_t** board, char command[], player_t* player) {
 		//TODO: call hanlde invalid command
 	}
 
+	//TODO: add ship to board
 
 	//printf("y: %d x: %d dir: %c id: %d category: %d\n", y, x, dir, id, cls);
 
 	return;
 }
 
-void print_fleet() {
+void print_players_fleet(player_t* player) {
 	for (int i = S_DES; i <= S_CAR; i++) {
-		for (int j = 0; j < 10; j++) {
-			printf("Class: %d ID: %d \t %d\n", i, j, fleet[i][j].valid);
-		}
-		printf("\n\n\n");
+		printf("Class: %d Amt: %d\n", i, player->fleet[i]);
 	}
 }
 
-int create_fleet(int fleetSize[]) {
-	int fleetAmt = 0;
-
+void create_fleet(int fleetSize[], player_t* player) {
 	for (int cls = S_DES; cls <= S_CAR; cls++) {
+		player->fleet[cls] = fleetSize[cls];
 
-		for (int amt = 0; amt < 10; amt++) {
-			fleet[cls][amt].valid = False;
+		for (int j = 0; j < 10; j++) {
+			player->ships[cls][j] = (ship_t*)malloc(sizeof(ship_t));
+			assert(
+				player->ships[cls][j] != NULL
+			);
+			//player->ships[cls][j]->valid = False;
 		}
 
-		for (int amt = 0; amt < fleetSize[cls]; amt++) {
-			fleetAmt++;
-			fleet[cls][amt].valid = True;
-			fleet[cls][amt].damaged = (int*)malloc(cls * sizeof(int));
-		}
-
+		//for (int j = 0; j < fleetSize[cls]; j++) {
+			//player->ships[cls][j]->valid = True;
+		//}
 	}
-	return fleetAmt;
+
+	for (int cls = S_DES; cls <= S_CAR; cls++)
+		for (int j = 0; j < 10; j++)
+			for (int k = 0; k < 5; k++)
+				player->ships[cls][j]->damaged[k] = 0;
+
+	player->shipPlaced = 0;
+	
+	return;
 }
 
 void set_fleet(char command[], player_t* player) {
-	int fleetSize[] = { 0,0,1,2,3,4 };
+	//int fleetSize[] = { 0,0,4,3,2,1 };
+	int fleetSize[6];
+
+	fleetSize[S_DES] = 4;
+	fleetSize[S_CRU] = 3;
+	fleetSize[S_BAT] = 3;
+	fleetSize[S_CAR] = 1;
+
 	int argc = 4;
 
 	/*
 		[0] and [1] are additional to make sure that i from fleetSize[i] coresponds to S_TYPE values
 			where TYPE is ship type
-		[2]: carAmt; default 1
-		[3]: batAmt; default 2
-		[4]: cruAmt; default 3
-		[5]: desAmt; default 4
+		[2]: desAmt; default 4
+		[3]: cruAmt; default 3
+		[4]: batAmt; default 2
+		[5]: carAmt; default 1
 	*/
 
 	if(command != "") {
@@ -126,23 +140,15 @@ void set_fleet(char command[], player_t* player) {
 		//TODO: wrong number of ships
 	}
 	
-	printf("CAR: %d BAT: %d CRU: %d DES: %d\n", fleetSize[2], fleetSize[3], fleetSize[4], fleetSize[5]);
+	//printf("DES: %d CRU: %d BAT: %d CAR: %d\n", fleetSize[2], fleetSize[3], fleetSize[4], fleetSize[5]);
 
-	player->fleetSize = create_fleet(fleetSize);
+	create_fleet(fleetSize, player);
 
 	//print_fleet(fleet);
 
 	return;
 }
 
-void fleet_free(ship_t fleet[6][10]) {
-	for (int cls = S_DES; cls <= S_CAR; cls++) {
-
-		for (int amt = 0; amt < 10; amt++) {
-			if (fleet[cls][amt].damaged != NULL) {
-				free(fleet[cls][amt].damaged); // TODO: Check if it works!
-			}
-		}
-
-	}
+void fleet_free() {
+	return;
 }

@@ -1,10 +1,42 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "constants.h"
+#include "ship.h"
 #include "player.h"
 #include "board.h"
+
+player_t* player_init(int rowLow, int rowHigh) {
+	player_t* player = (player_t*)malloc(sizeof(player_t));
+
+	assert(player != NULL);
+
+	player->rowLow = rowLow;
+	player->rowHigh = rowHigh;
+
+	return player;
+}
+
+int get_fleet_size(player_t* player) {
+	int size = 0;
+	for (int cls = S_DES; cls <= S_CAR; cls++) {
+		size += player->fleet[cls] * cls;
+	}
+	return size;
+}
+
+int get_remaining_parts(player_t* player) {
+	int size = 0;
+	for (int cls = S_DES; cls <= S_CAR; cls++) {
+		for (int j = 0; j < player->fleet[cls]; j++) {
+			for (int k = 0; k < cls; k++)
+				size += 1 - player->ships[cls][j]->damaged[k];
+		}
+	}
+	return size;
+}
 
 int shoot(board_t** board, dim_t* dim, player_t* player, char command[]) {
 	field_t field;
@@ -20,7 +52,7 @@ int shoot(board_t** board, dim_t* dim, player_t* player, char command[]) {
 		//TODO: not inside of board
 		//		FIELD DOES NOT EXIST
 	}
-	if (player->shipPlaced != player->fleetSize) {
+	if (player->shipPlaced != get_fleet_size(player)) {
 		printf("NOT ALL SHIPS PLACED\n");
 		//TODO: NOT ALL SHIP PLACED
 	}

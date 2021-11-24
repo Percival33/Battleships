@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "board.h"
 #include "commands.h"
@@ -11,77 +12,105 @@
 
 #define debug False
 
+void go_default(player_t* playerA, player_t* playerB) {
+	set_fleet("", playerA);
+	set_fleet("", playerB);
+	return;
+}
+
+void board_print(board_t** board, dim_t* dim, player_t* playerA, player_t* playerB) {
+	const int COLS = dim->COLS;
+	const int ROW_LOW = 0;
+	const int ROW_HIGH = dim->ROWS;
+	//	const int ROW_LOW = playerA->rowLow;
+//	const int ROW_HIGH = playerA->rowHigh;
+
+	for (int i = ROW_LOW; i < ROW_HIGH; i++) {
+		for (int j = 0; j < COLS; j++) {
+			if (board[i][j].type == B_EMPTY || board[i][j].type == B_BAN) {
+				printf(" ");
+			}
+			else if (board[i][j].type == B_TAKEN) {
+				printf("+");
+			}
+			else if (board[i][j].type == B_DESTROYED) {
+				printf("x");
+			}
+			//printf("{%d,%d} = %d ", i, j, board[i][j].type);
+		}
+		printf("\n");
+	}
+
+	//TODO: print A and B remaining
+	//TODO: get fleet of playerA and playerB and count reamaining parts
+	int AReamaining = get_remaining_parts(playerA);
+	int BReamaining = get_remaining_parts(playerB);
+
+
+	printf("Arem: %d Brem: %d\n", AReamaining, BReamaining);
+
+	return;
+
+}
+
 int main() {
 
-	int quit = 0;
-	int event = C_NULL;
+	int quit;
+	int event;
 	int commandId;
-	int activeCommandType = C_NULL;
+	int activeCommandType;
+	int nextPlayer;
 
-	dim_t dim = { 21, 10 }; // init { ROWS, COLS }
-
-	char command[100];
-
-	board_t** board = board_init(&dim);
-
-
-	player_t playerA = { 0, 9 }; // init playerA rows
-	player_t playerB = { 11, 20 }; // init playerB rows
-
-	field_t field = { 8 ,5 };
-
-
-	set_fleet("SET_FLEET 2 1 3 7", &playerA);
-	printf("strzal: %d\n", shoot(board, &dim, &playerA, "SHOOT 10 5"));
-
-	if (debug) {
-		set_fleet("SET_FLEET 2 1 3 7", &playerB);
-		place_ship(board, "PLACE_SHIP 12 4 N 1 DES", &playerA);
-		printf("czy DES: %d", get_class("DES"));
-		printf("czy {field} u playerA: %d\n", board_inside(&dim, &field));
-		printf("czy {field} u playerB: %d\n", board_inside(&dim, &field));
-	}
+	quit = 0;
+	event = C_NULL;
+	activeCommandType = C_NULL;
+	nextPlayer = C_PLAYER_A;
 	
+	dim_t* dim = dim_init(21, 10);
+
+	player_t* playerA = player_init(0, dim->ROWS/2);
+	player_t* playerB = player_init(dim->ROWS/2 + 1, dim->ROWS);
+	board_t** board = board_init(dim);
+	
+	go_default(playerA, playerB);
+	char command[101];
+
 	while (!quit) {
 
-		gets(command);
+		fgets(command, 100, stdin);
 
-		if (activeCommandType != C_NULL) { // type of commands is specified
-			switch (activeCommandType) {
-				case C_STATE:
-					// handles and validates all state commands 
-					break;
-				case C_PLAYER_A:
-					// handles and validates all player_a commands
-					break;
-				case C_PLAYER_B:
-					// handles and validates all player_b commands
-					break;
-			}
-		}
-		else {
-			commandId = get_command_type(&command);
-			
-			if (commandId == C_QUIT) {
+		commandId = get_command_type(command);
+
+		switch (activeCommandType) {
+			case C_QUIT:
 				quit = 1;
-				continue;
-			}
+				break;
 
-			//event = handle_command_type(command, &activeCommandType, commandId);
-			//TODO: merge get_command_type with handle_command_type
-		
-			if (event == C_INVALID) {
+
+
+			case C_STATE:
+				handle_state_commands(command);
+				break;
+
+			case C_PLAYER_A:
+				handle_player_command(command);
+				break;
+			
+			case C_PLAYER_B:
+				handle_player_command(command);
+				break;
+
+
+
+
+			case C_INVALID:
+				printf("INVALID COMMAND\n");
 				handle_invalid_command(command, activeCommandType);
-			}
-			else {
-				printf("event: %d acitveCommand: %d\n", event, activeCommandType);
-			}
-
+				break;
 		}	
 	}
 
-	fleet_free(fleet);
-	board_free(board, &dim);
-
+	fleet_free();
+	//board_free(board, &dim); FIXME
 	return 0;
 }

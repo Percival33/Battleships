@@ -3,7 +3,12 @@
 const char STATE[] = "[state]";
 const char PLAYER_A[] = "[playerA]";
 const char PLAYER_B[] = "[playerB]";
+
+const char PRINT[] = "PRINT";
+const char SET_FLEET[] = "SET_FLEET";
+const char NEXT_PLAYER[] = "NEXT_PLAYER";
 const char PLACE_SHIP[] = "PLACE_SHIP";
+const char SHOOT[] = "SHOOT";
 
 const char SHIP_NOT_ON_POSITION[] = "NOT IN STARTING POSITION";
 const char SHIP_PRESENT[] = "SHIP ALREADY PRESENT";

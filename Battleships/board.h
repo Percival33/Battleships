@@ -9,9 +9,16 @@ typedef struct board {
 	int type;
 }board_t;
 
-board_t** board_init(dim_t* dim);
 
-void board_print(board_t** board, dim_t* dim);
+/*
+	Initialize structure with dimentions
+*/
+dim_t* dim_init(int ROWS, int COLS);
+
+/*
+	Initialize board of dim dimentions
+*/
+board_t** board_init(dim_t* dim);
 
 
 /*

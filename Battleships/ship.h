@@ -4,15 +4,15 @@
 	TODO: create ship struct 
 */
 
-typedef struct {
-	int valid;
+typedef struct ship{
+	//int valid;
 	field_t head;
 	int direction;
-	int* damaged; // TODO: should be array?
+	int damaged[5]; // TODO: should be array?
 }ship_t;
 
 
-ship_t fleet[6][10]; //fleet[S][ID] ship of class S with id = ID 
+int fleetAmt[6]; //fleet[S] number of ships of class S
 
 /*
 	handles and validates place_ship command
@@ -25,14 +25,17 @@ void place_ship(struct board_t** board, char command[], struct player_t* player)
 
 /*
 	handles and validates set_fleet command
-	TODO:
-		by default set CAR:1 BAT:2 CRU:3 DES:4
-
 */
 void set_fleet(char command[], struct player_t* player);
 
 
 /*
 	function frees memory used in ship stucture
+	TODO: fix this function, to free memory used for fleet of player
 */
-void fleet_free(ship_t fleet[6][10]);
+void fleet_free();
+
+/*
+	print number of ships of all types
+*/
+void print_players_fleet(struct player_t* player);

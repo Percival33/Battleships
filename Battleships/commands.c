@@ -26,9 +26,27 @@ int get_command_type(char command[]) {
 	else if (is_correct_command(command, PLAYER_B)) {
 		return C_PLAYER_B;
 	}
+
 	else if (is_correct_command(command, "Q")) {
 		return C_QUIT;
 	}
+
+	else if (is_correct_command(command, PRINT)) {
+		return C_PRINT;
+	}
+	else if (is_correct_command(command, SET_FLEET)) {
+		return C_SET_FLEET;
+	}
+	else if (is_correct_command(command, NEXT_PLAYER)) {
+		return C_NEXT_PLAYER;
+	}
+	else if (is_correct_command(command, PLACE_SHIP)) {
+		return C_PLACE_SHIP;
+	}
+	else if (is_correct_command(command, SHOOT)) {
+		return C_SHOOT;
+	}
+
 	else {
 		return C_INVALID;
 	}
@@ -88,4 +106,20 @@ int get_number(char command[], int* id) {
 	number[i] = '\0';
 	printf("index: %d\n", *id);
 	return atoi(number);
+}
+
+int handle_player_command(char command[]) {
+	if (is_correct_command(command, PLACE_SHIP)) {
+		//
+	}
+	else if (is_correct_command(command, SHOOT)) {
+		
+	}
+	else {
+		handle_invalid_command(); // TODO: pass accurate args
+	}
+}
+
+void handle_state_commands(char command[]) {
+
 }
