@@ -10,6 +10,9 @@ const char SHIP_PRESENT[] = "SHIP ALREADY PRESENT";
 const char SHIP_ALL_SET[] = "ALL SHIPS OF THE CLASS ALREADY SET";
 const char OTHER_PLAYER_EXPECTED[] = "THE OTHER PLAYER EXPECTED";
 
+const int dx[] = { 0, -1, 0, 1};  
+const int dy[] = { 1, 0, -1, 0};
+
 int get_dir(char dirChar) {
 	int dir;
 	switch ((int)dirChar)

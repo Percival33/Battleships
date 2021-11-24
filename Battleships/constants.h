@@ -1,4 +1,5 @@
 #pragma once
+
 /*
 	TODO: add const to specify:
 			- type of ship
@@ -17,10 +18,16 @@ const char SHIP_PRESENT[];
 const char SHIP_ALL_SET[];
 const char OTHER_PLAYER_EXPECTED[];
 
-typedef struct {
-	int x;
+const int dx[]; 
+const int dy[];
+
+/*
+	Initialize with { y , x }
+*/
+typedef struct field{
 	int y;
-}point_t;
+	int x;
+}field_t;
 
 enum Consts {
 	True = 1,

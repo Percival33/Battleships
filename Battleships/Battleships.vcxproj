@@ -143,6 +143,7 @@
     <ClCompile Include="commands.c" />
     <ClCompile Include="constants.c" />
     <ClCompile Include="main.c" />
+    <ClCompile Include="player.c" />
     <ClCompile Include="ship.c" />
   </ItemGroup>
   <ItemGroup>

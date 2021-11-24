@@ -9,6 +9,8 @@
 #include "ship.h"
 #include "player.h"
 
+#define debug False
+
 int main() {
 
 	int quit = 0;
@@ -16,19 +18,29 @@ int main() {
 	int commandId;
 	int activeCommandType = C_NULL;
 
-	const int ROWS = 21;
-	const int COLS = 10;
-	
+	dim_t dim = { 21, 10 }; // init { ROWS, COLS }
 
 	char command[100];
 
-	board_t** board = board_init(ROWS, COLS);
-	
-	player_t playerA = { 0, 9 };
-	player_t playerB = { 11, 20 };
+	board_t** board = board_init(&dim);
 
-//	place_ship(board, "PLACE_SHIP 12 4 N 1 DES", &playerA);
-//	printf("czy DES: %d", get_class("DES"));
+
+	player_t playerA = { 0, 9 }; // init playerA rows
+	player_t playerB = { 11, 20 }; // init playerB rows
+
+	field_t field = { 8 ,5 };
+
+
+	set_fleet("SET_FLEET 2 1 3 7", &playerA);
+	printf("strzal: %d\n", shoot(board, &dim, &playerA, "SHOOT 10 5"));
+
+	if (debug) {
+		set_fleet("SET_FLEET 2 1 3 7", &playerB);
+		place_ship(board, "PLACE_SHIP 12 4 N 1 DES", &playerA);
+		printf("czy DES: %d", get_class("DES"));
+		printf("czy {field} u playerA: %d\n", board_inside(&dim, &field));
+		printf("czy {field} u playerB: %d\n", board_inside(&dim, &field));
+	}
 	
 	while (!quit) {
 
@@ -68,7 +80,8 @@ int main() {
 		}	
 	}
 
-	board_free(board, ROWS);
+	fleet_free(fleet);
+	board_free(board, &dim);
 
 	return 0;
 }
