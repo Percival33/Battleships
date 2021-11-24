@@ -8,21 +8,21 @@
 			- 
 */
 
-const char STATE[];
-const char PLAYER_A[];
-const char PLAYER_B[];
-const char WRONG_COMMAND[];
+const char STATE_CHAR[];
+const char PLAYER_A_CHAR[];
+const char PLAYER_B_CHAR[];
+const char WRONG_COMMAND_CHAR[];
 
-const char PRINT[];
-const char SET_FLEET[];
-const char NEXT_PLAYER[];
-const char PLACE_SHIP[];
-const char SHOOT[];
+const char PRINT_CHAR[];
+const char SET_FLEET_CHAR[];
+const char NEXT_PLAYER_CHAR[];
+const char PLACE_SHIP_CHAR[];
+const char SHOOT_CHAR[];
 
-const char SHIP_NOT_ON_POSITION[];
-const char SHIP_PRESENT[];
-const char SHIP_ALL_SET[];
-const char OTHER_PLAYER_EXPECTED[];
+const char SHIP_NOT_ON_POSITION_CHAR[];
+const char SHIP_PRESENT_CHAR[];
+const char SHIP_ALL_SET_CHAR[];
+const char OTHER_PLAYER_EXPECTED_CHAR[];
 
 const int dx[]; 
 const int dy[];
@@ -37,7 +37,9 @@ typedef struct field{
 
 enum Consts {
 	True = 1,
-	False = 0
+	False = 0,
+	PLAYER_A = 0,
+	PLAYER_B = 1
 };
 
 enum Commands {

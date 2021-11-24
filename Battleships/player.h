@@ -17,3 +17,11 @@ int shoot(struct board_t** board, struct dim_t* dim, struct player_t* player, ch
 	Function counts all remaining parts of ships
 */
 int get_remaining_parts(player_t* player);
+
+void go_default_fleet(player_t* player[]);
+
+
+/*
+	Function sets nextPlayer or calls handle invalid command
+*/
+int set_next_player(char command[]);

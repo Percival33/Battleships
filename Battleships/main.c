@@ -12,13 +12,9 @@
 
 #define debug False
 
-void go_default(player_t* playerA, player_t* playerB) {
-	set_fleet("", playerA);
-	set_fleet("", playerB);
-	return;
-}
 
-void board_print(board_t** board, dim_t* dim, player_t* playerA, player_t* playerB) {
+
+void board_print(board_t** board, dim_t* dim, player_t* player[]) {
 	const int COLS = dim->COLS;
 	const int ROW_LOW = 0;
 	const int ROW_HIGH = dim->ROWS;
@@ -43,8 +39,8 @@ void board_print(board_t** board, dim_t* dim, player_t* playerA, player_t* playe
 
 	//TODO: print A and B remaining
 	//TODO: get fleet of playerA and playerB and count reamaining parts
-	int AReamaining = get_remaining_parts(playerA);
-	int BReamaining = get_remaining_parts(playerB);
+	int AReamaining = get_remaining_parts(player[PLAYER_A]);
+	int BReamaining = get_remaining_parts(player[PLAYER_B]);
 
 
 	printf("Arem: %d Brem: %d\n", AReamaining, BReamaining);
@@ -68,12 +64,16 @@ int main() {
 	
 	dim_t* dim = dim_init(21, 10);
 
-	player_t* playerA = player_init(0, dim->ROWS/2);
-	player_t* playerB = player_init(dim->ROWS/2 + 1, dim->ROWS);
+	player_t* player[2];
+	player[PLAYER_A] = player_init(0, dim->ROWS / 2);
+	player[PLAYER_B] = player_init(dim->ROWS/2 + 1, dim->ROWS);
+
 	board_t** board = board_init(dim);
 	
-	go_default(playerA, playerB);
+	go_default_fleet(&player);
+
 	char command[101];
+	int temp;
 
 	while (!quit) {
 		if (fgets(command, 100, stdin) == NULL)
@@ -121,7 +121,9 @@ int main() {
 					break;
 
 				case C_STATE_TYPE:
-					handle_state_commands(command, activeCommandType);
+					temp = nextPlayer;
+					handle_state_commands(command, activeCommandType, &nextPlayer);
+					assert(nextPlayer != temp);
 					break;
 
 				case C_PLAYER_TYPE:
@@ -155,6 +157,8 @@ int main() {
 	}
 
 	fleet_free();
-	//board_free(board, &dim); FIXME
+	board_free(&board, dim);
+	free(player[PLAYER_A]);
+	free(player[PLAYER_B]);
 	return 0;
 }

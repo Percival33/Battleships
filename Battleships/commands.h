@@ -12,10 +12,8 @@ int get_command_type(char command[]);
 */
 void handle_invalid_command(char command[], int errorType);
 
-
 /*
-	function prints whether command is correctly spelled.
-	If not then calls function handle_invalid_command 
-	TODO: return value of current type of commands
+	function which checks if command is spelled correctly,
+	then calls adequate function to deal with specific command
 */
-int handle_command_type(char command[], int* activeCommand, int type);
+void handle_state_commands(char command[], int activeCommandType, int* nextPlayer);

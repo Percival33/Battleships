@@ -44,46 +44,10 @@ board_t** board_init(dim_t* dim) {
 	return board;
 }
 
-/*
-void board_print(board_t** board, dim_t* dim, player_t* playerA, player_t* playerB) {
-	const int COLS = dim->COLS;
-	const int ROW_LOW = 0;
-	const int ROW_HIGH = dim->ROWS;
-	//	const int ROW_LOW = playerA->rowLow;
-//	const int ROW_HIGH = playerA->rowHigh;
-
-	for (int i = ROW_LOW; i < ROW_HIGH; i++) {
-		for (int j = 0; j < COLS; j++) {
-			if (board[i][j].type == B_EMPTY || board[i][j].type == B_BAN) {
-				printf(" ");
-			}
-			else if (board[i][j].type == B_TAKEN) {
-				printf("+");
-			}
-			else if (board[i][j].type == B_DESTROYED) {
-				printf("x");
-			}
-			//printf("{%d,%d} = %d ", i, j, board[i][j].type);
-		}
-		printf("\n");
-	}
-
-	//TODO: print A and B remaining
-	//TODO: get fleet of playerA and playerB and count reamaining parts
-	int AReamaining = get_remaining_parts(playerA);
-	int BReamaining = get_remaining_parts(playerB);
-
-
-	printf("Arem: %d Brem: %d\n", AReamaining, BReamaining);
-
-	return;
-	
-}
-*/
-
-//FIXME
-void board_free(board_t** board) {
-	//free(&board);
+void board_free(board_t** board, dim_t* dim) {
+	for (int i = 0; i < dim->ROWS; i++)
+		free(board[i]);
+	free(board);
 	return;
 }
 

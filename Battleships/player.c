@@ -4,6 +4,7 @@
 #include <assert.h>
 
 #include "constants.h"
+#include "commands.h"
 #include "ship.h"
 #include "player.h"
 #include "board.h"
@@ -60,4 +61,29 @@ int shoot(board_t** board, dim_t* dim, player_t* player, char command[]) {
 	printf("y: %d x: %d\n", field.y, field.x);
 
 	return 1;
+}
+
+void go_default_fleet(player_t* player[]) {
+	set_fleet("", player[PLAYER_A]);
+	set_fleet("", player[PLAYER_B]);
+	return;
+}
+
+int set_next_player(char command[]) {
+	char P;
+	int argc = sscanf(command, "%*s %c", &P);
+	
+	assert(argc == 1);
+	
+	if (P == 'A') {
+		return C_PLAYER_A;
+	}
+	else if (P == 'B') {
+		return C_PLAYER_B;
+	}
+	else {
+		handle_invalid_command(command, C_INVALID);
+	}
+
+	return C_INVALID;
 }
