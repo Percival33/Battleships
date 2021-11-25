@@ -12,43 +12,6 @@
 
 #define debug False
 
-
-
-void board_print(board_t** board, dim_t* dim, player_t* player[]) {
-	const int COLS = dim->COLS;
-	const int ROW_LOW = 0;
-	const int ROW_HIGH = dim->ROWS;
-	//	const int ROW_LOW = playerA->rowLow;
-//	const int ROW_HIGH = playerA->rowHigh;
-
-	for (int i = ROW_LOW; i < ROW_HIGH; i++) {
-		for (int j = 0; j < COLS; j++) {
-			if (board[i][j].type == B_EMPTY || board[i][j].type == B_BAN) {
-				printf(" ");
-			}
-			else if (board[i][j].type == B_TAKEN) {
-				printf("+");
-			}
-			else if (board[i][j].type == B_DESTROYED) {
-				printf("x");
-			}
-			//printf("{%d,%d} = %d ", i, j, board[i][j].type);
-		}
-		printf("\n");
-	}
-
-	//TODO: print A and B remaining
-	//TODO: get fleet of playerA and playerB and count reamaining parts
-	int AReamaining = get_remaining_parts(player[PLAYER_A]);
-	int BReamaining = get_remaining_parts(player[PLAYER_B]);
-
-
-	printf("Arem: %d Brem: %d\n", AReamaining, BReamaining);
-
-	return;
-
-}
-
 int main() {
 
 	int quit;
@@ -64,13 +27,17 @@ int main() {
 	
 	dim_t* dim = dim_init(21, 10);
 
-	player_t* player[2];
-	player[PLAYER_A] = player_init(0, dim->ROWS / 2);
-	player[PLAYER_B] = player_init(dim->ROWS/2 + 1, dim->ROWS);
+	player_t** player;
+	player = (player_t**)malloc(2 * sizeof(player_t*));
+	assert(player != NULL);
+
+	player[PLAYER_A] = player_init(0, (dim->ROWS/2), PLAYER_A);
+	player[PLAYER_B] = player_init((dim->ROWS/2) + 1, dim->ROWS, PLAYER_B);
 
 	board_t** board = board_init(dim);
 	
-	go_default_fleet(&player);
+	set_fleet("SET_FLEET A 1 2 3 4", player);
+	set_fleet("SET_FLEET B 1 2 3 4", player);
 
 	char command[101];
 	int temp;
@@ -121,7 +88,7 @@ int main() {
 					break;
 
 				case C_STATE_TYPE:
-					handle_state_commands(command, activeCommandType, &nextPlayer);
+					handle_state_commands(command, &nextPlayer, board, player, dim);
 					break;
 
 				case C_PLAYER_TYPE:
@@ -155,8 +122,9 @@ int main() {
 	}
 
 	fleet_free();
-	board_free(&board, dim);
+	board_free(board, dim);
 	free(player[PLAYER_A]);
 	free(player[PLAYER_B]);
+	free(player);
 	return 0;
 }

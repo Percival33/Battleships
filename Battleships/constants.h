@@ -27,6 +27,8 @@ const char OTHER_PLAYER_EXPECTED_CHAR[];
 const int dx[]; 
 const int dy[];
 
+const int SHIP_MAX_NUMBER;
+
 /*
 	Initialize with { y , x }
 */

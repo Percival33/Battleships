@@ -19,6 +19,8 @@ const char OTHER_PLAYER_EXPECTED_CHAR[] = "THE OTHER PLAYER EXPECTED";
 const int dx[] = { 0, -1, 0, 1};  
 const int dy[] = { 1, 0, -1, 0};
 
+const int SHIP_MAX_NUMBER = 10;
+
 int get_dir(char dirChar) {
 	int dir;
 	switch ((int)dirChar)

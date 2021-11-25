@@ -5,14 +5,12 @@
 */
 
 typedef struct ship{
-	//int valid;
+	int created;
 	field_t head;
 	int direction;
 	int damaged[5]; // TODO: should be array?
 }ship_t;
 
-
-int fleetAmt[6]; //fleet[S] number of ships of class S
 
 /*
 	handles and validates place_ship command
@@ -22,12 +20,6 @@ int fleetAmt[6]; //fleet[S] number of ships of class S
 		check if there are already all ships of that type
 */
 void place_ship(struct board_t** board, char command[], struct player_t* player);
-
-/*
-	handles and validates set_fleet command
-*/
-void set_fleet(char command[], struct player_t* player);
-
 
 /*
 	function frees memory used in ship stucture

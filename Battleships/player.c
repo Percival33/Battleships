@@ -9,13 +9,20 @@
 #include "player.h"
 #include "board.h"
 
-player_t* player_init(int rowLow, int rowHigh) {
+player_t* player_init(int rowLow, int rowHigh, int id) {
 	player_t* player = (player_t*)malloc(sizeof(player_t));
 
 	assert(player != NULL);
 
 	player->rowLow = rowLow;
 	player->rowHigh = rowHigh;
+	player->shipPlaced = 0;
+
+	for (int cls = S_DES; cls <= S_CAR; cls++) {
+		for (int j = 0; j < SHIP_MAX_NUMBER; j++) {
+			player->ships[cls][j].created = False;
+		}
+	}
 
 	return player;
 }
@@ -32,8 +39,10 @@ int get_remaining_parts(player_t* player) {
 	int size = 0;
 	for (int cls = S_DES; cls <= S_CAR; cls++) {
 		for (int j = 0; j < player->fleet[cls]; j++) {
-			for (int k = 0; k < cls; k++)
-				size += 1 - player->ships[cls][j]->damaged[k];
+			if (player->ships[cls][j].created == True) {
+				for (int k = 0; k < cls; k++)
+					size += 1 - player->ships[cls][j].damaged[k];
+			}
 		}
 	}
 	return size;
@@ -63,9 +72,79 @@ int shoot(board_t** board, dim_t* dim, player_t* player, char command[]) {
 	return 1;
 }
 
-void go_default_fleet(player_t* player[]) {
-	set_fleet("", player[PLAYER_A]);
-	set_fleet("", player[PLAYER_B]);
+void create_fleet(int fleetSize[], player_t* player) {
+	assert(player != NULL);
+	assert(sizeof(player->fleet[2]) == sizeof(int));
+
+	for (int cls = S_DES; cls <= S_CAR; cls++) {
+		player->fleet[cls] = fleetSize[cls];
+	}
+
+	for (int cls = S_DES; cls <= S_CAR; cls++) {
+		for (int j = 0; j < SHIP_MAX_NUMBER; j++) {
+			player->ships[cls][j].created = False;
+		}
+	}
+
+	for (int cls = S_DES; cls <= S_CAR; cls++) {
+		for (int j = 0; j < fleetSize[cls]; j++) {
+			player->ships[cls][j].created = True;
+			for (int k = 0; k < cls; k++) {
+				player->ships[cls][j].damaged[k] = 0;
+			}
+		}
+	}
+
+	player->shipPlaced = 0;
+
+	return;
+}
+
+void set_fleet(char command[], player_t** players) {
+	int fleetSize[6];
+	char P;
+
+	// default values
+	//fleetSize[S_DES] = 4;
+	//fleetSize[S_CRU] = 3;
+	//fleetSize[S_BAT] = 2;
+	//fleetSize[S_CAR] = 1;
+
+	int argc = 5;
+	int id = -1;
+
+
+	argc = sscanf(command, "%*s %c %d %d %d %d", &P, &fleetSize[5], &fleetSize[4], &fleetSize[3], &fleetSize[2]);
+
+	if (P == 'A') {
+		id = PLAYER_A;
+	}
+	else if (P == 'B') {
+		id = PLAYER_B;
+	}
+	else {
+		id = 999;
+	}
+	
+	assert(id != -1);
+
+	if (argc != 5) {
+		//TODO: wrong number of args
+	}
+	if (
+		(fleetSize[2] < 0 || fleetSize[2] > 10) ||
+		(fleetSize[3] < 0 || fleetSize[3] > 10) ||
+		(fleetSize[4] < 0 || fleetSize[4] > 10) ||
+		(fleetSize[5] < 0 || fleetSize[5] > 10)
+		) {
+		//TODO: wrong number of ships
+	}
+
+	//printf("P: %d DES: %d CRU: %d BAT: %d CAR: %d\n", id, fleetSize[2], fleetSize[3], fleetSize[4], fleetSize[5]);
+
+
+	create_fleet(fleetSize, players[id]);
+
 	return;
 }
 

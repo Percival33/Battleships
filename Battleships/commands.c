@@ -1,9 +1,11 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
 #include "constants.h"
+#include "board.h"
 #include "player.h"
 #include "commands.h"
 
@@ -51,7 +53,7 @@ void handle_invalid_command(char command[], int errorType) {
 	int len = strlen(command);
 
 	if (errorType == C_PLAYER_A || errorType == C_PLAYER_B) {
-		printf("INVALID OPERATION \"%.*s \": %s\n", len-1, command, OTHER_PLAYER_EXPECTED_CHAR);
+		printf("INVALID OPERATION \"%.*s \": %s\n", len - 1, command, OTHER_PLAYER_EXPECTED_CHAR);
 	}
 	else if (errorType == C_INVALID) {
 		printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command, WRONG_COMMAND_CHAR);
@@ -60,7 +62,7 @@ void handle_invalid_command(char command[], int errorType) {
 	exit(1);
 }
 
-int handle_player_command(char command[], int activeCommandType) {
+void handle_player_command(char command[], int activeCommandType) {
 	if (is_correct_command(command, PLACE_SHIP_CHAR)) {
 		
 	}
@@ -73,18 +75,23 @@ int handle_player_command(char command[], int activeCommandType) {
 	return;
 }
 
-void handle_state_commands(char command[], int activeCommandType, int* nextPlayer) {
+void handle_state_commands(char command[], int *nextPlayer, board_t** board, player_t** players, dim_t* dim) {
+	//assert(nextPlayer != NULL);
 	if (is_correct_command(command, PRINT_CHAR)) {
-
+		int x;
+		int argc = sscanf(command, "%*s %d", &x);
+		assert(argc == 1); 
+	//	assert(x == 0);
+		board_print(board, dim, x, players);
 	}
 	else if (is_correct_command(command, SET_FLEET_CHAR)) {
-
+		set_fleet(command, players);
 	}
 	else if (is_correct_command(command, NEXT_PLAYER_CHAR)) {
 		*nextPlayer = set_next_player(command);
-	}
+}
 	else {
-		handle_invalid_command(command, activeCommandType); // TODO: pass accurate args
+		handle_invalid_command(command, C_INVALID); // TODO: pass accurate args
 	}
 	return;
 }

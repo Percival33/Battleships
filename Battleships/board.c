@@ -11,8 +11,8 @@ dim_t* dim_init(int ROWS, int COLS) {
 
 	assert(dim != NULL);
 
-	dim->COLS = 10;
-	dim->ROWS = 10;
+	dim->COLS = COLS;
+	dim->ROWS = ROWS;
 
 	return dim;
 }
@@ -62,4 +62,37 @@ int board_inside(dim_t* dim, field_t* field) {
 		return True;
 	}
 	return False;
+}
+
+void board_print(board_t** board, dim_t* dim, int mode, player_t** player) {
+	const int COLS = dim->COLS;
+	const int ROW_LOW = 0;
+	const int ROW_HIGH = dim->ROWS;
+
+	for (int i = ROW_LOW; i < ROW_HIGH; i++) {
+		for (int j = 0; j < COLS; j++) {
+			if (board[i][j].type == B_EMPTY || board[i][j].type == B_BAN) {
+				printf(" ");
+			}
+			else if (board[i][j].type == B_TAKEN) {
+				printf("+");
+			}
+			else if (board[i][j].type == B_DESTROYED) {
+				printf("x");
+			}
+			//printf("{%d,%d} = %d ", i, j, board[i][j].type);
+		}
+		printf("\n");
+	}
+
+	//TODO: print A and B remaining
+	//TODO: get fleet of playerA and playerB and count reamaining parts
+	int AReamaining = get_remaining_parts(player[PLAYER_A]);
+	int BReamaining = get_remaining_parts(player[PLAYER_B]);
+
+
+	printf("Arem: %d Brem: %d\n", AReamaining, BReamaining);
+
+	return;
+
 }
