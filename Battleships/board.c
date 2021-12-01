@@ -52,21 +52,7 @@ void board_free(board_t** board, dim_t* dim) {
 	return;
 }
 
-/*
-int board_inside(dim_t* dim, field_t* field) {
-	const int ROWS = dim->ROWS;
-	const int COLS = dim->COLS;
-
-	int inRows = (0 <= field->y && field->y < ROWS && field->y != ROWS/2);
-	int inCols = (0 <= field->x && field->x < COLS);
-
-	if (inRows && inCols) {
-		return True;
-	}
-	return False;
-}
-*/
-void board_print(board_t** board, dim_t* dim, int mode, player_t** player) {
+void basic_print(board_t** board, dim_t* dim) {
 	const int COLS = dim->COLS;
 	const int ROW_LOW = 0;
 	const int ROW_HIGH = dim->ROWS;
@@ -85,6 +71,81 @@ void board_print(board_t** board, dim_t* dim, int mode, player_t** player) {
 			//printf("{%d,%d} = %d ", i, j, board[i][j].type);
 		}
 		printf("\n");
+	}
+
+	return;
+}
+
+void extended_print_num_cols_rows(int COLS) {
+	if (COLS > 10) {
+		printf("  ");
+		for (int num = 0; num < COLS; num++) {
+			printf("%d", num / 10);
+		}
+		printf("\n");
+		printf("  ");
+		for (int num = 0; num < COLS; num++) {
+			printf("%d", num % 10);
+		}
+		printf("\n");
+	}
+	else {
+		printf("  ");
+		for (int num = 0; num < COLS; num++) {
+			printf("%d", num);
+		}
+		printf("\n");
+	}
+	return;
+}
+
+void extended_print(board_t** board, dim_t* dim, player_t** player) {
+	const int COLS = dim->COLS;
+	const int ROW_LOW = 0;
+	const int ROW_HIGH = dim->ROWS;
+
+	for (int row = ROW_LOW; row < ROW_HIGH; row++) {
+		if (row == ROW_LOW) {
+			extended_print_num_cols_rows(COLS);
+		}
+		
+		printf("%02d", row);
+
+		for (int col = 0; col < COLS; col++) {
+			switch (board[row][col].type) {
+				case B_EMPTY:
+					printf(" ");
+					break;
+				case B_TAKEN:
+					printf("+");
+					break;
+				case B_ENGINE:
+					printf("%%");
+					break;
+				case B_CANNON:
+					printf("!");
+					break;
+				case B_RADAR:
+					printf("@");
+					break;
+				case B_DESTROYED:
+					printf("x");
+					break;
+			}
+		}
+		printf("\n");
+	}
+
+	return;
+}
+
+void board_print(board_t** board, dim_t* dim, int mode, player_t** player) {
+		
+	if (mode == 0) {
+		basic_print(board, dim);
+	}
+	else if (mode == 1) {
+		extended_print(board, dim, player);
 	}
 
 	int AReamaining = get_remaining_parts(player[PLAYER_A]);

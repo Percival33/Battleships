@@ -31,4 +31,4 @@ void board_free(board_t** board, dim_t* dim);
 /*
 	Function prints board
 */
-void board_print(board_t** board, dim_t* dim, int mode, struct player_t** player);
+void board_print(board_t** board, dim_t* dim, int mode, struct player_t** players);

@@ -65,11 +65,20 @@ void add_ship(board_t** board, field_t field, player_t* player, int cls, int dir
 			field.x += dx[dir];
 		}
 
-		board[field.y][field.x].type = B_TAKEN;
 		board[field.y][field.x].playerId = player->id;
 		board[field.y][field.x].cls = cls;
 		board[field.y][field.x].shipId = shipId;
+		board[field.y][field.x].type = B_TAKEN;
 
+		if (len == 0) {
+			board[field.y][field.x].type = B_RADAR;
+		}
+		if (len == 1) {
+			board[field.y][field.x].type = B_CANNON;
+		}
+		if (len + 1 == cls) {
+			board[field.y][field.x].type = B_ENGINE;
+		}
 	}
 
 	return;

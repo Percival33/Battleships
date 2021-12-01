@@ -66,17 +66,17 @@ int main() {
 	activeCommandType = C_NULL;
 	nextPlayer = C_PLAYER_A;
 	
-	dim_t* dim = dim_init(21, 10);
+	dim_t* dim = dim_init(DEFAULT_ROWS_NUMBER, DEFAULT_COLS_NUMBER);
 	player_t** players = init_players(dim);
 	board_t** board = board_init(dim);
 	
 	set_default_fleet(players);
 
-	char command[101];
+	char command[MAX_COMMAND_LENGTH];
 	int temp;
 
 	while (!quit) {
-		if (fgets(command, 100, stdin) == NULL)
+		if (fgets(command, MAX_COMMAND_LENGTH - 2, stdin) == NULL)
 			break;
 
 		if (command[0] == '\n') {

@@ -75,7 +75,7 @@ int inside(dim_t* dim, field_t* field) {
 }
 
 void damage_ship(board_t** board, player_t** players, field_t field) {
-	if (board[field.y][field.x].type != B_TAKEN) {
+	if (board[field.y][field.x].type == B_EMPTY) {
 		return;
 	}
 
