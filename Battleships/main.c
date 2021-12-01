@@ -12,6 +12,46 @@
 
 #define debug False
 
+void set_default_fleet(player_t** players) {
+	set_fleet("SET_FLEET A 1 2 3 4", players);
+	set_fleet("SET_FLEET B 1 2 3 4", players);
+	return;
+}
+
+player_t** init_players(dim_t* dim) {
+	player_t** players = (player_t**)malloc(2 * sizeof(player_t*));
+	assert(players != NULL);
+
+	players[PLAYER_A] = player_init(0, (dim->ROWS / 2), PLAYER_A);
+	players[PLAYER_B] = player_init((dim->ROWS / 2) + 1, dim->ROWS, PLAYER_B);
+
+	return players;
+}
+
+void free_memory(board_t** board, dim_t* dim, player_t** players) {
+	fleet_free();
+	board_free(board, dim);
+	player_free(players);
+}
+
+void check_winner(player_t** players) {
+	if (players[PLAYER_A]->shipPlaced + players[PLAYER_B]->shipPlaced !=
+		get_fleet_size(players[PLAYER_A]) + get_fleet_size(players[PLAYER_B]))
+		return;
+	int AReamaining = get_remaining_parts(players[PLAYER_A]);
+	int BReamaining = get_remaining_parts(players[PLAYER_B]);
+
+	if (AReamaining == 0) {
+		printf("B won\n");
+		exit(0);
+	}
+	if (BReamaining == 0) {
+		printf("A won\n");
+		exit(0);
+	}
+	return;
+}
+
 int main() {
 
 	int quit;
@@ -19,6 +59,7 @@ int main() {
 	int commandId;
 	int activeCommandType;
 	int nextPlayer;
+	int currentPlayer;
 
 	quit = 0;
 	event = C_NULL;
@@ -26,18 +67,10 @@ int main() {
 	nextPlayer = C_PLAYER_A;
 	
 	dim_t* dim = dim_init(21, 10);
-
-	player_t** player;
-	player = (player_t**)malloc(2 * sizeof(player_t*));
-	assert(player != NULL);
-
-	player[PLAYER_A] = player_init(0, (dim->ROWS/2), PLAYER_A);
-	player[PLAYER_B] = player_init((dim->ROWS/2) + 1, dim->ROWS, PLAYER_B);
-
+	player_t** players = init_players(dim);
 	board_t** board = board_init(dim);
 	
-	set_fleet("SET_FLEET A 1 2 3 4", player);
-	set_fleet("SET_FLEET B 1 2 3 4", player);
+	set_default_fleet(players);
 
 	char command[101];
 	int temp;
@@ -56,11 +89,13 @@ int main() {
 			if ((commandId == C_PLAYER_A || commandId == C_PLAYER_B)) {
 				if (nextPlayer == C_PLAYER_A && commandId == C_PLAYER_A) {
 					activeCommandType = C_PLAYER_A;
+					currentPlayer = PLAYER_A;
 					nextPlayer = C_PLAYER_B;
 					continue;
 				}
 				else if (nextPlayer == C_PLAYER_B && commandId == C_PLAYER_B) {
 					activeCommandType = C_PLAYER_B;
+					currentPlayer = PLAYER_B;
 					nextPlayer = C_PLAYER_A;
 					continue;
 				}
@@ -88,16 +123,18 @@ int main() {
 					break;
 
 				case C_STATE_TYPE:
-					handle_state_commands(command, &nextPlayer, board, player, dim);
+					handle_state_commands(command, &nextPlayer, board, players, dim);
 					break;
 
 				case C_PLAYER_TYPE:
-					handle_player_command(command, activeCommandType);
+					handle_player_command(command, board, players, dim, currentPlayer);
 					break;
 
 				case C_PLAYER_A:
 					if (activeCommandType == C_PLAYER_A) {
+						check_winner(players);
 						activeCommandType = C_NULL;
+						currentPlayer = C_NULL;
 					}
 					else {
 						handle_invalid_command(command, C_PLAYER_A);
@@ -106,7 +143,9 @@ int main() {
 
 				case C_PLAYER_B:
 					if (activeCommandType == C_PLAYER_B) {
+						check_winner(players);
 						activeCommandType = C_NULL;
+						currentPlayer = C_NULL;
 					}
 					else {
 						handle_invalid_command(command, C_PLAYER_B);
@@ -120,11 +159,7 @@ int main() {
 		}
 			
 	}
-
-	fleet_free();
-	board_free(board, dim);
-	free(player[PLAYER_A]);
-	free(player[PLAYER_B]);
-	free(player);
+	free_memory(board, dim, players);
+	
 	return 0;
 }

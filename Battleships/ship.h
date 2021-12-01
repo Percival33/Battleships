@@ -1,14 +1,12 @@
 #pragma once
-
-/*
-	TODO: create ship struct 
-*/
+#include "constants.h"
 
 typedef struct ship{
 	int created;
+	int placed;
 	field_t head;
 	int direction;
-	int damaged[5]; // TODO: should be array?
+	int damaged[MAX_SHIP_LENGTH]; // TODO: should be array?
 }ship_t;
 
 
@@ -19,7 +17,7 @@ typedef struct ship{
 		check whether ship of this ID is already present
 		check if there are already all ships of that type
 */
-void place_ship(struct board_t** board, char command[], struct player_t* player);
+void place_ship(char command[], struct board_t** board, struct player_t* player, struct dim_t* dim);
 
 /*
 	function frees memory used in ship stucture

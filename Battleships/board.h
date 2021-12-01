@@ -7,6 +7,9 @@ typedef struct dimensions {
 
 typedef struct board {
 	int type;
+	int playerId;
+	int cls;
+	int shipId;
 }board_t;
 
 
@@ -24,11 +27,6 @@ board_t** board_init(dim_t* dim);
 	free memory allocated for board and each row of it
 */
 void board_free(board_t** board, dim_t* dim);
-
-/*
-	check if field is in position of a player
-*/
-int board_inside(dim_t* dim, struct field_t* field);
 
 /*
 	Function prints board

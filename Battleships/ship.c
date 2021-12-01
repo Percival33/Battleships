@@ -14,27 +14,68 @@
 #include "ship.h"
 #include "board.h"
 #include "player.h"
+#include "commands.h"
 
-// TODO: check starting position and length with dir
-int check_coords(field_t* field, int dir, player_t* player, dim_t* dim) { 
+int check_coords_inside(field_t field, int dir, int cls, player_t* player, board_t** board,
+						dim_t* dim) { 
 	const int ROWS = dim->ROWS;
 	const int COLS = dim->COLS;
 
-	int inRows = (player->rowLow <= field->y && field->y <= player->rowHigh);
-	int inCols = (0 <= field->x && field->x < COLS);
+	int inRows;
+	int inCols;
 
-	if (inRows && inCols) {
-		return True;
+	for (int len = 0; len < cls; len++) {
+		
+		if (len != 0) {
+			field.y += dy[dir];
+			field.x += dx[dir];
+		}
+
+		inRows = (player->rowLow <= field.y && field.y <= player->rowHigh);
+		inCols = (0 <= field.x && field.x < COLS);
+
+		if (!inRows || !inCols)
+			return False;
+	
+	}
+	return True;
+}
+
+int ship_placed(int cls, int id, player_t* player) {
+	for (int i = 0; i < 10; i++) {
+		if (player->ships[cls][i].created &&
+			player->ships[cls][i].placed &&
+			i == id) {
+			return True;
+		}
 	}
 	return False;
 }
 
-int ship_present(int cls, int id) {
-	// TODO: check if ship is already present
-	return -1;
+void add_ship(board_t** board, field_t field, player_t* player, int cls, int dir, int shipId) { 
+
+	player->ships[cls][shipId].head = field;
+	player->ships[cls][shipId].placed = True;
+	player->ships[cls][shipId].direction = dir;
+	player->shipPlaced++;
+
+	for (int len = 0; len < cls; len++) {
+		if (len != 0) {
+			field.y += dy[dir];
+			field.x += dx[dir];
+		}
+
+		board[field.y][field.x].type = B_TAKEN;
+		board[field.y][field.x].playerId = player->id;
+		board[field.y][field.x].cls = cls;
+		board[field.y][field.x].shipId = shipId;
+
+	}
+
+	return;
 }
 
-void place_ship(board_t** board, char command[], player_t* player) {
+void place_ship(char command[], board_t** board, player_t* player, dim_t* dim) {
 	int y;
 	int x;
 	char dirChar;
@@ -48,24 +89,30 @@ void place_ship(board_t** board, char command[], player_t* player) {
 	dir = get_dir(dirChar);
 	cls = get_class(classChar);
 
-	if (argc != 5) {
+	field_t field;
+	field.y = y;
+	field.x = x;
+
+	if (argc != 5 || cls == -1) {
 		printf("zla comenda place_ship argc: %d\n", argc);
-		//TODO: call hanlde invalid command
+		handle_invalid_command(command, C_INVALID);
 		return;
 	}
-	if (cls == -1) {
-		//TODO: call hanlde invalid command
+	if (!check_coords_inside(field, dir, cls, player, board, dim)) {
+		handle_invalid_command(command, C_NOT_IN_STARTING_POSITION);
 	}
-	if (check_coords(y, x, dir, player)) {
-		//TODO: call hanlde invalid command
+	if (ship_placed(cls, id, player)) {
+		handle_invalid_command(command, C_SHIP_ALREADY_PRESENT);
 	}
-	if (ship_present(cls, id)) {
-		//TODO: call hanlde invalid command
+	if (id >= player->fleet[cls]) {
+		handle_invalid_command(command, C_ALL_SHIPS_OF_THE_CLASS_ALREADY_PRESENT);
 	}
 
-	//TODO: add ship to board
+	assert(player->ships[cls][id].created == True);
+	add_ship(board, field, player, cls, dir, id);
+	
 
-	//printf("y: %d x: %d dir: %c id: %d category: %d\n", y, x, dir, id, cls);
+	//printf("y: %d x: %d dir: %d id: %d cls: %d\n", y, x, dir, id, cls);
 
 	return;
 }

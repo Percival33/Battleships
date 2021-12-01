@@ -19,15 +19,21 @@ const char NEXT_PLAYER_CHAR[];
 const char PLACE_SHIP_CHAR[];
 const char SHOOT_CHAR[];
 
-const char SHIP_NOT_ON_POSITION_CHAR[];
-const char SHIP_PRESENT_CHAR[];
-const char SHIP_ALL_SET_CHAR[];
+const char NOT_IN_STARTING_POSITION_CHAR[];
+const char SHIP_ALREADY_PRESENT_CHAR[];
+const char ALL_SHIPS_OF_THE_CLASS_ALREADY_PRESENT_CHAR[];
+const char SHIP_NOT_ALL_SHIPS_PLACED_CHAR[];
 const char OTHER_PLAYER_EXPECTED_CHAR[];
+
+const char FIELD_DOES_NOT_EXIST_CHAR[];
 
 const int dx[]; 
 const int dy[];
-
-const int SHIP_MAX_NUMBER;
+/*
+const int MAX_SHIPS_NUMBER;
+const int MAX_SHIP_LENGTH;
+const int MAX_SHIP_TYPE_NUMBER;
+*/
 
 /*
 	Initialize with { y , x }
@@ -41,7 +47,10 @@ enum Consts {
 	True = 1,
 	False = 0,
 	PLAYER_A = 0,
-	PLAYER_B = 1
+	PLAYER_B = 1,
+	MAX_SHIPS_NUMBER = 10,
+	MAX_SHIP_LENGTH = 5,
+	MAX_SHIP_TYPE_NUMBER = 6
 };
 
 enum Commands {
@@ -61,6 +70,11 @@ enum Commands {
 	C_SET_FLEET = 6,			// Place ship command
 	C_NEXT_PLAYER = 7,			// Place ship command
 	C_SHOOT = 8,			// Place ship command
+	C_NOT_ALL_SHIPS_PLACED = 1000,
+	C_FIELD_DOES_NOT_EXIST = 1001,
+	C_NOT_IN_STARTING_POSITION = 1002,
+	C_SHIP_ALREADY_PRESENT = 1003,
+	C_ALL_SHIPS_OF_THE_CLASS_ALREADY_PRESENT = 1004,
 
 
 	C_IN = 104,					// Switching command type 
@@ -74,9 +88,6 @@ enum Ship {
 	S_BAT = 4,					// [BAT]TLESHIP size
 	S_CRU = 3,					// [CRU]ISER size
 	S_DES = 2,					// [DES]TROYER size
-
-	S_PLACE = 10,				// Place ship command ID
-	S_SHOOT = 11,				// Shoot command ID
 };
 
 enum Direction { 
