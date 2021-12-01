@@ -59,14 +59,17 @@ void basic_print(board_t** board, dim_t* dim) {
 
 	for (int i = ROW_LOW; i < ROW_HIGH; i++) {
 		for (int j = 0; j < COLS; j++) {
-			if (board[i][j].type == B_EMPTY || board[i][j].type == B_BAN) {
-				printf(" ");
-			}
-			else if (board[i][j].type == B_TAKEN) {
+			if (board[i][j].type == B_TAKEN		||
+				board[i][j].type == B_ENGINE	||
+				board[i][j].type == B_CANNON	||
+				board[i][j].type == B_RADAR) {
 				printf("+");
 			}
 			else if (board[i][j].type == B_DESTROYED) {
 				printf("x");
+			}
+			else {
+				printf(" ");
 			}
 			//printf("{%d,%d} = %d ", i, j, board[i][j].type);
 		}
