@@ -81,6 +81,10 @@ void handle_invalid_command(char command[], int errorType) {
 		printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command,
 			REEF_IS_NOT_PLACED_ON_BOARD_CHAR);
 	}
+	else if (errorType == C_SHIP_ON_REEF) {
+		printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command,
+			PLACING_SHIP_ON_REEF_CHAR);
+	}
 	else if (errorType == C_PLACING_SHIP_TOO_CLOSE) {
 		printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command,
 			PLACING_SHIP_TOO_CLOSE_TO_OTHER_SHIP_CHAR);
