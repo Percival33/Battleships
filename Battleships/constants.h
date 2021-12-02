@@ -27,6 +27,14 @@ const char OTHER_PLAYER_EXPECTED_CHAR[];
 
 const char FIELD_DOES_NOT_EXIST_CHAR[];
 
+
+const char BOARD_SIZE_CHAR[];
+const char INIT_POSITION_CHAR[];
+const char REEF_CHAR[];
+const char REEF_IS_NOT_PLACED_ON_BOARD_CHAR[];
+const char PLACING_SHIP_ON_REEF_CHAR[];
+const char PLACING_SHIP_TOO_CLOSE_TO_OTHER_SHIP_CHAR[];
+
 const int dx[]; 
 const int dy[];
 /*
@@ -73,11 +81,17 @@ enum Commands {
 	C_SET_FLEET = 6,			// Place ship command
 	C_NEXT_PLAYER = 7,			// Place ship command
 	C_SHOOT = 8,			// Place ship command
+
 	C_NOT_ALL_SHIPS_PLACED = 1000,
 	C_FIELD_DOES_NOT_EXIST = 1001,
 	C_NOT_IN_STARTING_POSITION = 1002,
 	C_SHIP_ALREADY_PRESENT = 1003,
 	C_ALL_SHIPS_OF_THE_CLASS_ALREADY_PRESENT = 1004,
+	C_BOARD_SIZE = 1005,
+	C_INIT_POSITION = 1006,
+	C_REEF_NOT_ON_BOARD = 1007,
+	C_SHIP_ON_REEF = 1008,
+	C_PLACING_SHIP_TOO_CLOSE = 1009,
 
 
 	C_IN = 104,					// Switching command type 
@@ -102,16 +116,19 @@ enum Direction {
 
 enum Board {
 	B_EMPTY = 200,
-	B_TAKEN = 201,
-	B_DESTROYED = 202,
-	B_BAN = 203,
+	B_BAN = 201,
+	B_REEF = 202,
+
+	B_TAKEN = 203,
 	B_ENGINE = 204,
 	B_CANNON = 205,
-	B_RADAR = 206
-
+	B_RADAR = 206,
+	B_DESTROYED = 207,
 };
 
 
 int get_dir(char dirChar);
 
 int get_class(char cat[]);
+
+int get_player_id(char P);

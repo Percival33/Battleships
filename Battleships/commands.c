@@ -32,9 +32,12 @@ int get_command_type(char command[]) {
 		return C_QUIT;
 	}
 
-	else if ((is_correct_command(command, PRINT_CHAR)) ||
-		(is_correct_command(command, SET_FLEET_CHAR)) ||
-		(is_correct_command(command, NEXT_PLAYER_CHAR))) {
+	else if ((is_correct_command(command, PRINT_CHAR))		||
+		(is_correct_command(command, SET_FLEET_CHAR))		||
+		(is_correct_command(command, NEXT_PLAYER_CHAR))		||
+		(is_correct_command(command, BOARD_SIZE_CHAR))		||
+		(is_correct_command(command, INIT_POSITION_CHAR))	||
+		(is_correct_command(command, REEF_CHAR))) {
 		return C_STATE_TYPE;
 	}
 
@@ -74,6 +77,15 @@ void handle_invalid_command(char command[], int errorType) {
 		printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command,
 				ALL_SHIPS_OF_THE_CLASS_ALREADY_PRESENT_CHAR);
 	}
+	else if (errorType == C_REEF_NOT_ON_BOARD) {
+		printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command,
+			REEF_IS_NOT_PLACED_ON_BOARD_CHAR);
+	}
+	else if (errorType == C_PLACING_SHIP_TOO_CLOSE) {
+		printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command,
+			PLACING_SHIP_TOO_CLOSE_TO_OTHER_SHIP_CHAR);
+	}
+
 	
 
 	
@@ -94,6 +106,79 @@ void handle_player_command(char command[], board_t** board, player_t** players, 
 	return;
 }
 
+dim_t set_dim_size(char command[]) {
+	int y;
+	int x;
+	int argc = sscanf(command, "%*s %d %d", &y, &x);
+
+	if (argc != 2 || y <= 0 || x <= 0) {
+		handle_invalid_command(command, C_INVALID);
+	}
+	
+	dim_t dim;
+	dim.ROWS = y;
+	dim.COLS = x;
+	return dim;
+}
+
+void set_board_size(char command[], board_t** board, dim_t* dim) {
+	if (dim->ROWS != DEFAULT_COLS_NUMBER && dim->COLS != DEFAULT_COLS_NUMBER) {
+		handle_invalid_command(command, C_INVALID);
+	}
+	board_free(board, dim);
+	dim_t dim_local = set_dim_size(command); 
+	dim->ROWS = dim_local.ROWS;
+	dim->COLS = dim_local.COLS;
+	board = board_init(dim);
+	return;
+}
+
+void set_init_position(char command[], player_t** players, dim_t* dim) {
+	//INIT_POSITION P y1 x1 y2 x2 
+	int yL;
+	int yR;
+	int xL;
+	int xR;
+	char P;
+
+	int argc = sscanf(command, "%*s %c %d %d %d %d", &P, &yL, &xL, &yR, &xR);
+
+	int playerId = get_player_id(P);
+
+	if (argc != 5 || playerId == -1) {
+		handle_invalid_command(command, C_INVALID);
+	}
+	if ((yL < 0 || yL > dim->ROWS) ||
+		(xL < 0 || xL > dim->COLS) ||
+		(xR < xL || yR < yL) ||
+		(xR > dim->COLS || yR > dim->ROWS)) {
+		handle_invalid_command(command, C_INVALID);
+	}
+
+	players[playerId]->rowLow = yL;
+	players[playerId]->rowHigh = yR + 1;
+	players[playerId]->colLow = xL;
+	players[playerId]->colHigh = xR + 1;
+
+
+	return;
+}
+
+void set_reef(char command[], board_t** board, dim_t* dim) {
+	int y;
+	int x;
+	int argc = sscanf(command, "%*s %d %d", &y, &x);
+	if (argc != 2)
+		handle_invalid_command(command, C_INVALID);
+	if (y < 0 || y >= dim->ROWS || x < 0 || x >= dim->COLS) {
+		handle_invalid_command(command, C_REEF_NOT_ON_BOARD);
+	}
+
+	board[y][x].type = B_REEF;
+	return;
+
+}
+
 void handle_state_commands(char command[], int *nextPlayer, board_t** board, player_t** players, dim_t* dim) {
 	//assert(nextPlayer != NULL);
 	if (is_correct_command(command, PRINT_CHAR)) {
@@ -108,9 +193,18 @@ void handle_state_commands(char command[], int *nextPlayer, board_t** board, pla
 	}
 	else if (is_correct_command(command, NEXT_PLAYER_CHAR)) {
 		*nextPlayer = set_next_player(command);
-}
+	}
+	else if (is_correct_command(command, BOARD_SIZE_CHAR)) {
+		set_board_size(command, board, dim);
+	}
+	else if (is_correct_command(command, INIT_POSITION_CHAR)) {
+		set_init_position(command, players, dim);
+	}
+	else if (is_correct_command(command, REEF_CHAR)) {
+		set_reef(command, board, dim);
+	}
 	else {
-		handle_invalid_command(command, C_INVALID); // TODO: pass accurate args
+		handle_invalid_command(command, C_INVALID);
 	}
 	return;
 }

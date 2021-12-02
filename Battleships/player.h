@@ -6,6 +6,8 @@ typedef struct player {
 	int id;
 	int rowLow; 
 	int rowHigh;
+	int colLow;
+	int colHigh;
 	int shipPlaced;			// number of ship placed
 	int fleet[MAX_SHIP_TYPE_NUMBER];		// fleet[S] = number of ships of class S
 	ship_t ships[MAX_SHIP_TYPE_NUMBER][MAX_SHIPS_NUMBER];		// ships[S][ID] = ships of class S with ID

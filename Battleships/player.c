@@ -17,6 +17,9 @@ player_t* player_init(int rowLow, int rowHigh, int id) {
 	player->id = id;
 	player->rowLow = rowLow;
 	player->rowHigh = rowHigh;
+	player->colLow = 0;
+	player->colHigh = DEFAULT_COLS_NUMBER;
+
 	player->shipPlaced = 0;
 
 	for (int cls = S_DES; cls <= S_CAR; cls++) {

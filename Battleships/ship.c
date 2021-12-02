@@ -31,8 +31,8 @@ int check_coords_inside(field_t field, int dir, int cls, player_t* player, board
 			field.x += dx[dir];
 		}
 
-		inRows = (player->rowLow <= field.y && field.y <= player->rowHigh);
-		inCols = (0 <= field.x && field.x < COLS);
+		inRows = (player->rowLow <= field.y && field.y < player->rowHigh);
+		inCols = (player->colLow <= field.x && field.x < player->colHigh);
 
 		if (!inRows || !inCols)
 			return False;
@@ -84,6 +84,52 @@ void add_ship(board_t** board, field_t field, player_t* player, int cls, int dir
 	return;
 }
 
+
+
+int check_around(board_t** board, field_t field, dim_t* dim) {
+	for (int dir = 0; dir < 4; dir++) {
+		int newX = field.x + dx[dir];
+		int newY = field.y + dy[dir];
+
+		if (newX >= dim->COLS || newY >= dim->ROWS || newX < 0 || newY < 0) // field does not exist
+			continue;
+
+		int fieldType = board[newY][newX].type;
+
+		if (fieldType >= B_TAKEN && fieldType <= B_DESTROYED) { // check if fieldType is occupied by ship
+			return False;
+		}
+	}
+	return True;
+}
+
+int check_neighbouring_fields(board_t** board, field_t field, dim_t* dim, int cls, int dir) {
+	for (int len = 0; len < cls; len++) {
+		if (len != 0) {
+			field.y += dy[dir];
+			field.x += dx[dir];
+		}
+		if (!check_around(board, field, dim)) {
+			return False;
+		}
+	}
+	return True;
+}
+
+int check_if_reef(board_t** board, field_t field, int cls, int dir) {
+	for (int len = 0; len < cls; len++) {
+
+		if (len != 0) {
+			field.y += dy[dir];
+			field.x += dx[dir];
+		}
+
+		if (board[field.y][field.x].type == B_REEF)
+			return True;
+	}
+	return False;
+}
+
 void place_ship(char command[], board_t** board, player_t* player, dim_t* dim) {
 	int y;
 	int x;
@@ -115,6 +161,12 @@ void place_ship(char command[], board_t** board, player_t* player, dim_t* dim) {
 	}
 	if (id >= player->fleet[cls]) {
 		handle_invalid_command(command, C_ALL_SHIPS_OF_THE_CLASS_ALREADY_PRESENT);
+	}
+	if (check_if_reef(board, field, cls, dir)) {
+		handle_invalid_command(command, C_SHIP_ON_REEF);
+	}
+	if (!check_neighbouring_fields(board, field, dim, cls, dir)) { 
+		handle_invalid_command(command, C_PLACING_SHIP_TOO_CLOSE);
 	}
 
 	assert(player->ships[cls][id].created == True);

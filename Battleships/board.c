@@ -57,15 +57,15 @@ void basic_print(board_t** board, dim_t* dim) {
 	const int ROW_LOW = 0;
 	const int ROW_HIGH = dim->ROWS;
 
-	for (int i = ROW_LOW; i < ROW_HIGH; i++) {
-		for (int j = 0; j < COLS; j++) {
-			if (board[i][j].type == B_TAKEN		||
-				board[i][j].type == B_ENGINE	||
-				board[i][j].type == B_CANNON	||
-				board[i][j].type == B_RADAR) {
+	for (int row = ROW_LOW; row < ROW_HIGH; row++) {
+		for (int col = 0; col < COLS; col++) {
+			if (board[row][col].type == B_TAKEN		||
+				board[row][col].type == B_ENGINE	||
+				board[row][col].type == B_CANNON	||
+				board[row][col].type == B_RADAR) {
 				printf("+");
 			}
-			else if (board[i][j].type == B_DESTROYED) {
+			else if (board[row][col].type == B_DESTROYED) {
 				printf("x");
 			}
 			else {
@@ -133,6 +133,9 @@ void extended_print(board_t** board, dim_t* dim, player_t** player) {
 					break;
 				case B_DESTROYED:
 					printf("x");
+					break;
+				case B_REEF:
+					printf("#");
 					break;
 			}
 		}
