@@ -19,13 +19,5 @@ typedef struct ship{
 */
 void place_ship(char command[], struct board_t** board, struct player_t* player, struct dim_t* dim);
 
-/*
-	function frees memory used in ship stucture
-	TODO: fix this function, to free memory used for fleet of player
-*/
-void fleet_free();
+void set_ship(char command[], struct board_t** board, struct player_t** players, struct dim_t* dim);
 
-/*
-	print number of ships of all types
-*/
-void print_players_fleet(struct player_t* player);

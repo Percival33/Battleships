@@ -29,7 +29,6 @@ player_t** init_players(dim_t* dim) {
 }
 
 void free_memory(board_t** board, dim_t* dim, player_t** players) {
-	fleet_free();
 	board_free(board, dim);
 	player_free(players);
 }

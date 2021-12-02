@@ -37,7 +37,8 @@ int get_command_type(char command[]) {
 		(is_correct_command(command, NEXT_PLAYER_CHAR))		||
 		(is_correct_command(command, BOARD_SIZE_CHAR))		||
 		(is_correct_command(command, INIT_POSITION_CHAR))	||
-		(is_correct_command(command, REEF_CHAR))) {
+		(is_correct_command(command, REEF_CHAR))			||
+		(is_correct_command(command, SHIP_CHAR))) {
 		return C_STATE_TYPE;
 	}
 
@@ -73,21 +74,21 @@ void handle_invalid_command(char command[], int errorType) {
 	else if (errorType == C_SHIP_ALREADY_PRESENT) {
 		printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command, SHIP_ALREADY_PRESENT_CHAR);
 	}
-	else if (errorType == C_ALL_SHIPS_OF_THE_CLASS_ALREADY_PRESENT) {
+	else if (errorType == C_ALL_SHIPS_OF_THE_CLASS_ALREADY_SET) {
 		printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command,
-				ALL_SHIPS_OF_THE_CLASS_ALREADY_PRESENT_CHAR);
+				ALL_SHIPS_OF_THE_CLASS_ALREADY_SET_CHAR);
 	}
 	else if (errorType == C_REEF_NOT_ON_BOARD) {
 		printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command,
 			REEF_IS_NOT_PLACED_ON_BOARD_CHAR);
 	}
-	else if (errorType == C_SHIP_ON_REEF) {
-		printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command,
-			PLACING_SHIP_ON_REEF_CHAR);
-	}
 	else if (errorType == C_PLACING_SHIP_TOO_CLOSE) {
 		printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command,
 			PLACING_SHIP_TOO_CLOSE_TO_OTHER_SHIP_CHAR);
+	}
+	else if (errorType == C_PLACING_SHIP_ON_REEF) {
+		printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command,
+			PLACING_SHIP_ON_REEF_CHAR);
 	}
 
 	
@@ -206,6 +207,9 @@ void handle_state_commands(char command[], int *nextPlayer, board_t** board, pla
 	}
 	else if (is_correct_command(command, REEF_CHAR)) {
 		set_reef(command, board, dim);
+	}
+	else if (is_correct_command(command, SHIP_CHAR)) {
+		set_ship(command, board, players, dim);
 	}
 	else {
 		handle_invalid_command(command, C_INVALID);
