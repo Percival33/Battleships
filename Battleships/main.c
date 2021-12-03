@@ -60,6 +60,22 @@ void clear_moved(player_t* player) {
 	return;
 }
 
+void handle_player_ends_turn(char command[], int commandId, player_t** players, int* activeCommandType,
+	int* currentPlayer, int* shoots) {
+	
+	if (*activeCommandType == commandId) {
+		check_winner(players);
+		*activeCommandType = C_NULL;
+		*currentPlayer = C_NULL;
+		*shoots = 0;
+		clear_moved(players[commandId]);
+	}
+	else {
+		handle_invalid_command(command, commandId);
+	}
+	return;
+}
+
 int main() {
 
 	int quit;
@@ -68,14 +84,14 @@ int main() {
 	int activeCommandType;
 	int nextPlayer;
 	int currentPlayer;
-	int extended_ships;
+	int extendedShips;
 	
 	
-	extended_ships = False;
+	extendedShips = False;
 	quit = False;
 	event = C_NULL;
 	activeCommandType = C_NULL;
-	nextPlayer = C_PLAYER_A;
+	nextPlayer = PLAYER_A;
 	
 	dim_t* dim = dim_init(DEFAULT_ROWS_NUMBER, DEFAULT_COLS_NUMBER);
 	player_t** players = init_players(dim);
@@ -85,8 +101,6 @@ int main() {
 
 	char command[MAX_COMMAND_LENGTH];
 	int shoots = 0;
-
-	//TODO EXTENDED SHIPS command
 
 	while (!quit) {
 		if (fgets(command, MAX_COMMAND_LENGTH - 2, stdin) == NULL)
@@ -99,21 +113,21 @@ int main() {
 		commandId = get_command_type(command);
 
 		if (activeCommandType == C_NULL) {
-			if ((commandId == C_PLAYER_A || commandId == C_PLAYER_B)) {
-				if (nextPlayer == C_PLAYER_A && commandId == C_PLAYER_A) {
-					activeCommandType = C_PLAYER_A;
+			if ((commandId == PLAYER_A || commandId == PLAYER_B)) {
+				if (nextPlayer == PLAYER_A && commandId == PLAYER_A) {
+					activeCommandType = PLAYER_A;
 					currentPlayer = PLAYER_A;
-					nextPlayer = C_PLAYER_B;
+					nextPlayer = PLAYER_B;
 					continue;
 				}
-				else if (nextPlayer == C_PLAYER_B && commandId == C_PLAYER_B) {
-					activeCommandType = C_PLAYER_B;
+				else if (nextPlayer == PLAYER_B && commandId == PLAYER_B) {
+					activeCommandType = PLAYER_B;
 					currentPlayer = PLAYER_B;
-					nextPlayer = C_PLAYER_A;
+					nextPlayer = PLAYER_A;
 					continue;
 				}
 				else {
-					handle_invalid_command(command, C_PLAYER_A);
+					handle_invalid_command(command, PLAYER_A);
 				}
 			}
 			else if (commandId == C_STATE) {
@@ -136,35 +150,19 @@ int main() {
 					break;
 
 				case C_STATE_TYPE:
-					handle_state_commands(command, &nextPlayer, board, players, dim);
+					handle_state_commands(command, &nextPlayer, board, players, dim, &extendedShips);
 					break;
 
 				case C_PLAYER_TYPE:
-					handle_player_command(command, board, players, dim, currentPlayer, shoots);
+					handle_player_command(command, board, players, dim, currentPlayer, &shoots, extendedShips);
 					break;
 
-				case C_PLAYER_A:
-					if (activeCommandType == C_PLAYER_A) {
-						check_winner(players);
-						activeCommandType = C_NULL;
-						currentPlayer = C_NULL;
-						clear_moved(players[PLAYER_A]);
-					}
-					else {
-						handle_invalid_command(command, C_PLAYER_A);
-					}
+				case PLAYER_A:
+					handle_player_ends_turn(command, commandId, players, &activeCommandType, &currentPlayer, &shoots);
 					break;
 
-				case C_PLAYER_B:
-					if (activeCommandType == C_PLAYER_B) {
-						check_winner(players);
-						activeCommandType = C_NULL;
-						currentPlayer = C_NULL;
-						clear_moved(players[PLAYER_B]);
-					}
-					else {
-						handle_invalid_command(command, C_PLAYER_B);
-					}
+				case PLAYER_B:
+					handle_player_ends_turn(command, commandId, players, &activeCommandType, &currentPlayer, &shoots);
 					break;
 
 				case C_INVALID:

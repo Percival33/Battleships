@@ -205,10 +205,10 @@ int set_next_player(char command[]) {
 	assert(argc == 1);
 	
 	if (P == 'A') {
-		return C_PLAYER_A;
+		return PLAYER_A;
 	}
 	else if (P == 'B') {
-		return C_PLAYER_B;
+		return PLAYER_B;
 	}
 	else {
 		handle_invalid_command(command, C_WRONG_ARGS);

@@ -63,9 +63,7 @@ enum Commands {
 	C_NULL = -1,					// Current command is null
 	C_QUIT = 'Q',
 
-	C_STATE = 0,				// state command ID
-	C_PLAYER_A = 1,			// player A command ID
-	C_PLAYER_B = 2,			// player B command ID
+	C_STATE = 10,				// state command ID
 	C_PLAYER_TYPE = 999,
 	C_STATE_TYPE = 998,
 	C_INVALID = 3,			// Invalid command ID
@@ -91,6 +89,7 @@ enum Commands {
 	C_SHIP_MOVED_ALREADY = 1010,
 	C_SHIP_CANNOT_MOVE = 1011,
 	C_SHIP_WENT_FROM_BOARD = 1012,
+	C_EXTENDED = 1013,
 
 
 	C_IN = 104,					// Switching command type 
@@ -114,9 +113,9 @@ enum Direction {
 	S = 2,
 	W = 3, 
 
-	F = 0,
-	L = -1,
-	R = 1,
+	F = 0,			// [F]orward
+	L = -1,			// [L]eft
+	R = 1,			// [R]ight
 };
 
 enum Board {

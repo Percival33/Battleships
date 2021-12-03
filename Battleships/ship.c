@@ -330,6 +330,7 @@ int check_if_free_to_go(board_t** board, player_t* player, dim_t* dim, int cls, 
 	if (moveDir == F) { // move was only forward, adding ship in its new position
 		ship.direction = currDir;
 		ship.head = currField;
+		ship.moved++;
 
 		player->ships[cls][shipId] = ship;
 
@@ -364,7 +365,7 @@ int check_if_free_to_go(board_t** board, player_t* player, dim_t* dim, int cls, 
 	return True;
 }
 
-void move(char command[], board_t** board, dim_t* dim, player_t* player) {
+void move(char command[], board_t** board, dim_t* dim, player_t* player, int extendedShips) {
 	//MOVE i C x
 	int shipId;
 	char clsChar[MAX_SHIP_LENGTH];
@@ -389,7 +390,7 @@ void move(char command[], board_t** board, dim_t* dim, player_t* player) {
 	if (player->ships[cls][shipId].moved == get_number_of_moves(cls)) {
 		handle_invalid_command(command, C_SHIP_MOVED_ALREADY);
 	}
-	if (player->ships[cls][shipId].damaged[cls - 1] == True) { // engine destroyed
+	if (extendedShips == True && player->ships[cls][shipId].damaged[cls - 1] == True) { // engine destroyed
 		handle_invalid_command(command, C_SHIP_CANNOT_MOVE);
 	}
 
