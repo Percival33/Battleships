@@ -1,10 +1,4 @@
 #define _CRT_SECURE_NO_WARNINGS
-/*
-	TODO: create functions to handle:
-			- fleet creation 
-			- ship placing
-			- condition of ships (if it was hit?)
-*/
 
 #include <stdlib.h>
 #include <stdio.h>

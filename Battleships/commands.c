@@ -1,4 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
+#define STOS (errorType == PLAYER_A || errorType == PLAYER_B)
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -75,60 +76,67 @@ void handle_invalid_command(char command[], int errorType) { //TODO fix readabil
 	int len = strlen(command);
 	char* exception = "lolz Nie Dziala";
 	switch (errorType) {
-	case PLAYER_A || PLAYER_B:
+	case PLAYER_A:
+		exception = OTHER_PLAYER_EXPECTED_CHAR;
+		break;
+	case PLAYER_B:
 		exception = OTHER_PLAYER_EXPECTED_CHAR;
 		break;
 
 	case C_INVALID:
 		exception = WRONG_COMMAND_CHAR;
 		break;
-	
+
 	case C_NOT_ALL_SHIPS_PLACED:
 		exception = SHIP_NOT_ALL_SHIPS_PLACED_CHAR;
-		break; 
-	
+		break;
+
 	case C_WRONG_ARGS:
 		exception = "WRONG ARGUMENTS";
-		break; 
-	
+		break;
+
 	case C_FIELD_DOES_NOT_EXIST:
 		exception = FIELD_DOES_NOT_EXIST_CHAR;
 		break;
-	
+
 	case C_NOT_IN_STARTING_POSITION:
 		exception = NOT_IN_STARTING_POSITION_CHAR;
 		break;
-	
+
 	case C_SHIP_ALREADY_PRESENT:
 		exception = SHIP_ALREADY_PRESENT_CHAR;
 		break;
-	
+
 	case C_ALL_SHIPS_OF_THE_CLASS_ALREADY_SET:
 		exception = ALL_SHIPS_OF_THE_CLASS_ALREADY_SET_CHAR;
 		break;
-	
+
 	case C_REEF_NOT_ON_BOARD:
 		exception = REEF_IS_NOT_PLACED_ON_BOARD_CHAR;
 		break;
-	
+
 	case C_PLACING_SHIP_TOO_CLOSE:
 		exception = PLACING_SHIP_TOO_CLOSE_TO_OTHER_SHIP_CHAR;
 		break;
-	
+
 	case C_PLACING_SHIP_ON_REEF:
 		exception = PLACING_SHIP_ON_REEF_CHAR;
 		break;
-	
+
 	case C_SHIP_MOVED_ALREADY:
 		exception = SHIP_MOVED_ALREADY_CHAR;
 		break;
-	
+
 	case C_SHIP_WENT_FROM_BOARD:
 		exception = SHIP_WENT_FROM_BOARD_CHAR;
 		break;
 	}
-	
-	printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command, exception);
+	if (STOS) {
+		printf("INVALID OPERATION \"%.*s \": %s\n", len - 1, command, exception);		// (-.-)
+	}
+	else {
+		printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command, exception);
+	}
 	
 	exit(1);
 }
