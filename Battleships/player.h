@@ -8,8 +8,8 @@ typedef struct player {
 	int rowHigh;
 	int colLow;
 	int colHigh;
-	int shipPlaced;			// number of ship placed
-	int fleet[MAX_SHIP_TYPE_NUMBER];		// fleet[S] = number of ships of class S
+	int shipPlaced;												// number of ship placed
+	int fleet[MAX_SHIP_TYPE_NUMBER];							// fleet[S] = number of ships of class S
 	ship_t ships[MAX_SHIP_TYPE_NUMBER][MAX_SHIPS_NUMBER];		// ships[S][ID] = ships of class S with ID
 } player_t;	
 
@@ -23,9 +23,8 @@ void player_free(player_t** players);
 
 /*
 	Function handles input validates and shoot field
-	TODO: damage ship at field
 */
-int shoot(char command[], struct board_t** board, struct dim_t* dim, struct player_t** players, int playerId);
+void shoot_default(char command[], struct board_t** board, struct dim_t* dim, struct player_t** players, int playerId);
 
 /*
 	Function counts all remaining parts of ships

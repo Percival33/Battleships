@@ -51,6 +51,15 @@ void check_winner(player_t** players) {
 	return;
 }
 
+void clear_moved(player_t* player) {
+	for (int cls = S_DES; cls <= S_CAR; cls++) {
+		for (int shipId = 0; shipId < MAX_SHIPS_NUMBER; shipId++) {
+			player->ships[cls][shipId].moved = 0;
+		}
+	}
+	return;
+}
+
 int main() {
 
 	int quit;
@@ -59,8 +68,11 @@ int main() {
 	int activeCommandType;
 	int nextPlayer;
 	int currentPlayer;
-
-	quit = 0;
+	int extended_ships;
+	
+	
+	extended_ships = False;
+	quit = False;
 	event = C_NULL;
 	activeCommandType = C_NULL;
 	nextPlayer = C_PLAYER_A;
@@ -72,7 +84,9 @@ int main() {
 	set_default_fleet(players);
 
 	char command[MAX_COMMAND_LENGTH];
-	int temp;
+	int shoots = 0;
+
+	//TODO EXTENDED SHIPS command
 
 	while (!quit) {
 		if (fgets(command, MAX_COMMAND_LENGTH - 2, stdin) == NULL)
@@ -126,7 +140,7 @@ int main() {
 					break;
 
 				case C_PLAYER_TYPE:
-					handle_player_command(command, board, players, dim, currentPlayer);
+					handle_player_command(command, board, players, dim, currentPlayer, shoots);
 					break;
 
 				case C_PLAYER_A:
@@ -134,6 +148,7 @@ int main() {
 						check_winner(players);
 						activeCommandType = C_NULL;
 						currentPlayer = C_NULL;
+						clear_moved(players[PLAYER_A]);
 					}
 					else {
 						handle_invalid_command(command, C_PLAYER_A);
@@ -145,6 +160,7 @@ int main() {
 						check_winner(players);
 						activeCommandType = C_NULL;
 						currentPlayer = C_NULL;
+						clear_moved(players[PLAYER_B]);
 					}
 					else {
 						handle_invalid_command(command, C_PLAYER_B);
@@ -159,6 +175,6 @@ int main() {
 			
 	}
 	free_memory(board, dim, players);
-	
+
 	return 0;
 }

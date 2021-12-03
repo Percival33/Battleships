@@ -10,6 +10,7 @@ const char SET_FLEET_CHAR[] = "SET_FLEET";
 const char NEXT_PLAYER_CHAR[] = "NEXT_PLAYER";
 const char PLACE_SHIP_CHAR[] = "PLACE_SHIP";
 const char SHOOT_CHAR[] = "SHOOT";
+const char MOVE_CHAR[] = "MOVE";
 
 const char NOT_IN_STARTING_POSITION_CHAR[] = "NOT IN STARTING POSITION";
 const char SHIP_ALREADY_PRESENT_CHAR[] = "SHIP ALREADY PRESENT";
@@ -26,6 +27,9 @@ const char REEF_CHAR[] = "REEF";
 const char REEF_IS_NOT_PLACED_ON_BOARD_CHAR[] = "REEF IS NOT PLACED ON BOARD";
 const char PLACING_SHIP_ON_REEF_CHAR[] = "PLACING SHIP ON REEF";
 const char PLACING_SHIP_TOO_CLOSE_TO_OTHER_SHIP_CHAR[] = "PLACING SHIP TOO CLOSE TO OTHER SHIP";
+const char SHIP_MOVED_ALREADY_CHAR[] = "SHIP MOVED ALREADY";
+const char SHIP_CANNOT_MOVE_CHAR[] = "SHIP CANNOT MOVE";
+const char SHIP_WENT_FROM_BOARD_CHAR[] = "SHIP WENT FROM BOARD";
 
 const int dx[] = { 0, -1, 0, 1};  
 const int dy[] = { 1, 0, -1, 0};
@@ -68,7 +72,7 @@ int is_equal(char A[], char B[]) {
 }
 
 int get_class(char catChar[]) {
-	int cat = -1;
+	int cat = ERROR;
 	if (is_equal(catChar, "CAR")) {
 		cat = S_CAR;
 	}
@@ -90,5 +94,18 @@ int get_player_id(char P) {
 		return PLAYER_A;
 	else if (P == 'B')
 		return PLAYER_B;
-	return -1;
+	return ERROR;
+}
+
+int get_move_dir(char dir) {
+	if (dir == 'F') {
+		return F;
+	}
+	if (dir == 'L') {
+		return L;
+	}
+	if (dir == 'R') {
+		return R;
+	}
+	return ERROR;
 }

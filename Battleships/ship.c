@@ -16,11 +16,8 @@
 #include "player.h"
 #include "commands.h"
 
-int check_coords_inside(field_t field, int dir, int cls, player_t* player, board_t** board,
-						dim_t* dim) { 
-	const int ROWS = dim->ROWS;
-	const int COLS = dim->COLS;
-
+bool check_coords_inside_player_area(field_t field, int dir, int cls, player_t* player) { 
+	
 	int inRows;
 	int inCols;
 
@@ -41,7 +38,33 @@ int check_coords_inside(field_t field, int dir, int cls, player_t* player, board
 	return True;
 }
 
-int ship_placed(int cls, int id, player_t* player) {
+bool check_coords_inside_board(field_t field, int dir, int cls, player_t* player, board_t** board,
+	dim_t* dim) {
+	const int ROWS = dim->ROWS;
+	const int COLS = dim->COLS;
+
+	int inRows;
+	int inCols;
+
+	for (int len = 0; len < cls; len++) {
+
+		if (len != 0) {
+			field.y += dy[dir];
+			field.x += dx[dir];
+		}
+
+		inRows = (0 <= field.y && field.y < ROWS);
+		inCols = (0 <= field.x && field.x < COLS);
+
+		if (!inRows || !inCols)
+			return False;
+
+	}
+	return True;
+}
+
+
+bool ship_placed(int cls, int id, player_t* player) {
 	for (int i = 0; i < 10; i++) {
 		if (player->ships[cls][i].created &&
 			player->ships[cls][i].placed &&
@@ -86,7 +109,7 @@ void add_ship(board_t** board, field_t field, player_t* player, int cls, int dir
 	return;
 }
 
-int check_around(board_t** board, field_t field, dim_t* dim) {
+bool check_around(board_t** board, field_t field, dim_t* dim) {
 	for (int dir = 0; dir < 4; dir++) {
 		int newX = field.x + dx[dir];
 		int newY = field.y + dy[dir];
@@ -103,7 +126,7 @@ int check_around(board_t** board, field_t field, dim_t* dim) {
 	return True;
 }
 
-int check_neighbouring_fields(board_t** board, field_t field, dim_t* dim, int cls, int dir) {
+bool check_neighbouring_fields(board_t** board, field_t field, dim_t* dim, int cls, int dir) {
 	for (int len = 0; len < cls; len++) {
 		if (len != 0) {
 			field.y += dy[dir];
@@ -116,7 +139,7 @@ int check_neighbouring_fields(board_t** board, field_t field, dim_t* dim, int cl
 	return True;
 }
 
-int check_if_reef(board_t** board, field_t field, int cls, int dir) {
+bool check_if_free_from_reef(board_t** board, field_t field, int cls, int dir) {
 	for (int len = 0; len < cls; len++) {
 
 		if (len != 0) {
@@ -148,12 +171,13 @@ void place_ship(char command[], board_t** board, player_t* player, dim_t* dim) {
 	field.y = y;
 	field.x = x;
 
-	if (argc != 5 || cls == -1) {
-		printf("zla comenda place_ship argc: %d\n", argc);
+	if (argc != 5) {
 		handle_invalid_command(command, C_INVALID);
-		return;
 	}
-	if (!check_coords_inside(field, dir, cls, player, board, dim)) {
+	if(cls == ERROR) {
+		handle_invalid_command(command, C_WRONG_ARGS);
+	}
+	if (!check_coords_inside_player_area(field, dir, cls, player)) {
 		handle_invalid_command(command, C_NOT_IN_STARTING_POSITION);
 	}
 	if (ship_placed(cls, id, player)) {
@@ -162,7 +186,7 @@ void place_ship(char command[], board_t** board, player_t* player, dim_t* dim) {
 	if (id >= player->fleet[cls]) {
 		handle_invalid_command(command, C_ALL_SHIPS_OF_THE_CLASS_ALREADY_SET);
 	}
-	if (!check_if_reef(board, field, cls, dir)) {
+	if (check_if_free_from_reef(board, field, cls, dir) == False) {
 		handle_invalid_command(command, C_PLACING_SHIP_ON_REEF);
 	}
 	if (!check_neighbouring_fields(board, field, dim, cls, dir)) { 
@@ -203,13 +227,13 @@ void set_ship(char command[], board_t** board, player_t** players, dim_t* dim) {
 	if (argc != 7) {
 		handle_invalid_command(command, C_INVALID);
 	}
-	if (playerId != PLAYER_A && playerId != PLAYER_B) {
-		handle_invalid_command(command, C_INVALID);
+	if(cls == ERROR || playerId == ERROR) {
+		handle_invalid_command(command, C_WRONG_ARGS);
 	}
 	if (shipId >= players[playerId]->fleet[cls]) {
 		handle_invalid_command(command, C_ALL_SHIPS_OF_THE_CLASS_ALREADY_SET);
 	}
-	if (!check_if_reef(board, field, cls, dir)) {
+	if (check_if_free_from_reef(board, field, cls, dir) == False) {
 		handle_invalid_command(command, C_PLACING_SHIP_ON_REEF);
 	}
 	if (!check_neighbouring_fields(board, field, dim, cls, dir)) {
@@ -229,4 +253,160 @@ void set_ship(char command[], board_t** board, player_t** players, dim_t* dim) {
 	add_ship(board, field, players[playerId], cls, dir, shipId);
 
 	return;
+}
+
+void remove_from_board(board_t** board, field_t field, int cls, int dir) {
+	for (int len = 0; len < cls; len++) {
+		if (len != 0) {
+			field.x += dx[dir];
+			field.y += dy[dir];
+		}
+		board[field.y][field.x].type = B_EMPTY;
+		board[field.y][field.x].cls = S_NULL;
+		board[field.y][field.x].playerId = B_EMPTY;
+		board[field.y][field.x].shipId = S_NULL;
+	}
+	return;
+}
+
+field_t rotate(field_t field, int* dir, int moveDir, int cls) {
+	
+	
+	int newDir = (*dir + moveDir + 4) % 4;
+
+	if (moveDir == F) { // no rotation -> moveDir = F(orward)
+		field.x -= dx[*dir];
+		field.y -= dy[*dir];
+		return field;
+	}
+
+	*dir = newDir;
+
+	// N , S -> y +-
+	// E , W -> x +-
+	switch (newDir) {
+		case N:
+			field.y -= (cls - 1);
+			break;
+		case E:
+			field.x += (cls - 1);
+			break;
+		case S:
+			field.y += (cls + 1);
+			break;
+		case W:
+			field.x -= (cls - 1);
+			break;
+	}
+
+	return field;
+}
+
+int check_if_free_to_go(board_t** board, player_t* player, dim_t* dim, int cls, int shipId, int moveDir) { //TODO refactor function, add_ship in move function
+	ship_t ship = player->ships[cls][shipId];
+
+	int currDir = ship.direction;
+	field_t currField = ship.head;
+
+	remove_from_board(board, currField, cls, currDir);
+	
+	currField = rotate(currField, &currDir, F, cls);
+
+	if (check_if_free_from_reef(board, currField, cls, currDir) == False) { // after moving forward 1 square
+		add_ship(board, ship.head, player, cls, ship.direction, shipId);
+		return C_PLACING_SHIP_ON_REEF;
+	}
+
+	if (check_coords_inside_board(currField, currDir, cls, player, board, dim) == False) {
+		add_ship(board, ship.head, player, cls, ship.direction, shipId);
+		return C_SHIP_WENT_FROM_BOARD;
+	}
+	if (check_neighbouring_fields(board, currField, dim, cls, currDir) == False) {
+		add_ship(board, ship.head, player, cls, ship.direction, shipId);
+		return C_PLACING_SHIP_TOO_CLOSE;
+	}
+
+
+	if (moveDir == F) { // move was only forward, adding ship in its new position
+		ship.direction = currDir;
+		ship.head = currField;
+
+		player->ships[cls][shipId] = ship;
+
+		add_ship(board, ship.head, player, cls, ship.direction, shipId);
+		return True;
+	}
+
+	currField = rotate(currField, &currDir, moveDir, cls);
+
+	if (check_if_free_from_reef(board, currField, cls, currDir) == False) { // after moving forward and rotating
+		add_ship(board, ship.head, player, cls, ship.direction, shipId);
+		return C_PLACING_SHIP_ON_REEF;
+	}
+
+	if (check_coords_inside_board(currField, currDir, cls, player, board, dim) == False) {
+		add_ship(board, ship.head, player, cls, ship.direction, shipId);
+		return C_SHIP_WENT_FROM_BOARD;
+	}
+	if (check_neighbouring_fields(board, currField, dim, cls, currDir) == False) {
+		add_ship(board, ship.head, player, cls, ship.direction, shipId);
+		return C_PLACING_SHIP_TOO_CLOSE;
+	}
+
+	ship.direction = currDir;
+	ship.head = currField;
+	ship.moved++;
+
+	player->ships[cls][shipId] = ship;
+
+	add_ship(board, ship.head, player, cls, ship.direction, shipId);
+
+	return True;
+}
+
+void move(char command[], board_t** board, dim_t* dim, player_t* player) {
+	//MOVE i C x
+	int shipId;
+	char clsChar[MAX_SHIP_LENGTH];
+	char moveDirChar;
+
+	int argc = sscanf(command, "%*s %d %s %c", &shipId, clsChar, &moveDirChar);
+
+	int cls = get_class(clsChar);
+	int moveDir = get_move_dir(moveDirChar);
+
+	assert(0 <= shipId < MAX_SHIPS_NUMBER);
+
+	if (argc != 3) {
+		handle_invalid_command(command, C_INVALID);
+	}
+	if (cls == ERROR || moveDir == ERROR) {
+		handle_invalid_command(command, C_WRONG_ARGS);
+	}
+	if (shipId >= MAX_SHIPS_NUMBER || player->ships[cls][shipId].placed == False) {
+		handle_invalid_command(command, C_INVALID);
+	}
+	if (player->ships[cls][shipId].moved == get_number_of_moves(cls)) {
+		handle_invalid_command(command, C_SHIP_MOVED_ALREADY);
+	}
+	if (player->ships[cls][shipId].damaged[cls - 1] == True) { // engine destroyed
+		handle_invalid_command(command, C_SHIP_CANNOT_MOVE);
+	}
+
+	int flag = check_if_free_to_go(board, player, dim, cls, shipId, moveDir);
+
+	if (flag != True) {
+		handle_invalid_command(command, flag);
+	}
+
+
+	
+	/*
+		1. the ship has not destroyed engine(SHIP CANNOT MOVE),
+		2. the ship is not moving too many times(SHIP MOVED ALREADY),
+		3. the ship is not placed on reef(PLACING SHIP ON REEF),
+		4. the ship not moves out of board (SHIP WENT FROM BOARD),
+		5. the ship is not placed too close to other ships (PLACING SHIP TOO CLOSE TO OTHER SHIP).
+	*/
+
 }

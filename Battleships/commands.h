@@ -21,4 +21,4 @@ void handle_state_commands(char command[], int* nextPlayer, struct board_t** boa
 	function which checks if command is spelled correctly,
 	then calls adequate function to deal with specific command
 */
-void handle_player_command(char command[], struct board_t** board, struct player_t** players, struct dim_t* dim, int playerId);
+void handle_player_command(char command[], struct board_t** board, struct player_t** players, struct dim_t* dim, int playerId, int shoots);

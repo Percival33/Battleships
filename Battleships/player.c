@@ -26,6 +26,7 @@ player_t* player_init(int rowLow, int rowHigh, int id) {
 		for (int j = 0; j < MAX_SHIPS_NUMBER; j++) {
 			player->ships[cls][j].created = False;
 			player->ships[cls][j].placed = False;
+			player->ships[cls][j].moved = 0;
 			for (int len = 0; len < MAX_SHIP_LENGTH; len++) {
 				player->ships[cls][j].damaged[len] = False;
 			}
@@ -87,6 +88,8 @@ void damage_ship(board_t** board, player_t** players, field_t field) {
 	int cls = board[field.y][field.x].cls;
 	int shipId = board[field.y][field.x].shipId;
 
+	assert(cls != S_NULL);
+
 	ship_t currShip = players[playerId]->ships[cls][shipId];
 	field_t head = currShip.head;
 	for (int len = 0; len < cls; len++) {
@@ -105,7 +108,7 @@ void damage_ship(board_t** board, player_t** players, field_t field) {
 	return;
 }
 
-int shoot(char command[], board_t** board, dim_t* dim, player_t** players, int playerId) {
+void shoot_default(char command[], board_t** board, dim_t* dim, player_t** players, int playerId) {
 	field_t field;
 	int argc = sscanf(command, "%*s %d %d", &field.y, &field.x);
 
@@ -127,7 +130,7 @@ int shoot(char command[], board_t** board, dim_t* dim, player_t** players, int p
 
 	damage_ship(board, players, field);
 
-	return True;
+	return;
 }
 
 void create_fleet(int fleetSize[], player_t* player) {
@@ -141,6 +144,7 @@ void create_fleet(int fleetSize[], player_t* player) {
 	for (int cls = S_DES; cls <= S_CAR; cls++) {
 		for (int j = 0; j < MAX_SHIPS_NUMBER; j++) {
 			player->ships[cls][j].created = False;
+			player->ships[cls][j].placed = False;
 		}
 	}
 
@@ -169,37 +173,27 @@ void set_fleet(char command[], player_t** players) {
 	//fleetSize[S_CAR] = 1;
 
 	int argc = 5;
-	int id = -1;
 
 
 	argc = sscanf(command, "%*s %c %d %d %d %d", &P, &fleetSize[5], &fleetSize[4], &fleetSize[3], &fleetSize[2]);
 
-	if (P == 'A') {
-		id = PLAYER_A;
-	}
-	else if (P == 'B') {
-		id = PLAYER_B;
-	}
-	else {
-		id = 999;
-	}
+	int playerId = get_player_id(P);
 	
-	assert(id != -1);
-
-	if (argc != 5								|| // wrong number of argc
-		(id == 999)								|| // wrong ID
-		(fleetSize[2] < 0 || fleetSize[2] > 10) || // wrong number of given ship class
-		(fleetSize[3] < 0 || fleetSize[3] > 10) ||
-		(fleetSize[4] < 0 || fleetSize[4] > 10) ||
-		(fleetSize[5] < 0 || fleetSize[5] > 10)
-		) {											
-
+	if (argc != 5) {
 		handle_invalid_command(command, C_INVALID);
+	}
+	if(playerId == ERROR						|| // wrong ID
+		fleetSize[2] < 0 || fleetSize[2] > 10	|| // wrong number of given ship class
+		fleetSize[3] < 0 || fleetSize[3] > 10	||
+		fleetSize[4] < 0 || fleetSize[4] > 10	||
+		fleetSize[5] < 0 || fleetSize[5] > 10) {											
+
+		handle_invalid_command(command, C_WRONG_ARGS);
 	}
 
 	//printf("P: %d DES: %d CRU: %d BAT: %d CAR: %d\n", id, fleetSize[2], fleetSize[3], fleetSize[4], fleetSize[5]);
 
-	create_fleet(fleetSize, players[id]);
+	create_fleet(fleetSize, players[playerId]);
 
 	return;
 }
@@ -217,8 +211,30 @@ int set_next_player(char command[]) {
 		return C_PLAYER_B;
 	}
 	else {
-		handle_invalid_command(command, C_INVALID);
+		handle_invalid_command(command, C_WRONG_ARGS);
 	}
 
 	return C_INVALID;
+}
+
+int get_shooting_range(int cls) {
+	if (cls == S_CAR) // shooting range is infinite
+		return 1337 * 1337;
+	return cls * cls;
+}
+
+int get_dist(field_t a, field_t b) {
+	int deltaX = a.x - b.x;
+	int deltaY = a.y - b.y;
+
+	deltaX *= deltaX;
+	deltaY *= deltaY;
+
+	return deltaX + deltaY;
+}
+
+int get_number_of_moves(int cls) {
+	if (cls == S_CAR)
+		return CAR_MOVES;
+	return OTHER_MOVES;
 }

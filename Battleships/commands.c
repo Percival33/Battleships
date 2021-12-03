@@ -8,8 +8,9 @@
 #include "board.h"
 #include "player.h"
 #include "commands.h"
+#include "ship.h"
 
-int is_correct_command(char command[], char type[]) {
+bool is_correct_command(char command[], char type[]) {
 	if (strncmp(command, type, strlen(type)) == 0) {
 		return True;
 	}
@@ -32,19 +33,20 @@ int get_command_type(char command[]) {
 		return C_QUIT;
 	}
 
-	else if ((is_correct_command(command, PRINT_CHAR))		||
-		(is_correct_command(command, SET_FLEET_CHAR))		||
-		(is_correct_command(command, NEXT_PLAYER_CHAR))		||
-		(is_correct_command(command, BOARD_SIZE_CHAR))		||
-		(is_correct_command(command, INIT_POSITION_CHAR))	||
-		(is_correct_command(command, REEF_CHAR))			||
-		(is_correct_command(command, SHIP_CHAR))) {
+	else if (is_correct_command(command, PRINT_CHAR)		||
+		is_correct_command(command, SET_FLEET_CHAR)			||
+		is_correct_command(command, NEXT_PLAYER_CHAR)		||
+		is_correct_command(command, BOARD_SIZE_CHAR)		||
+		is_correct_command(command, INIT_POSITION_CHAR)		||
+		is_correct_command(command, REEF_CHAR)				||
+		is_correct_command(command, SHIP_CHAR)) {
 		return C_STATE_TYPE;
 	}
 
 
-	else if (is_correct_command(command, PLACE_SHIP_CHAR) ||
-			(is_correct_command(command, SHOOT_CHAR))) {
+	else if (is_correct_command(command, PLACE_SHIP_CHAR)	||
+			is_correct_command(command, SHOOT_CHAR)			||
+			is_correct_command(command, MOVE_CHAR)) {
 		return C_PLAYER_TYPE;
 	}
 	else {
@@ -55,12 +57,16 @@ int get_command_type(char command[]) {
 void handle_invalid_command(char command[], int errorType) {
 
 	int len = strlen(command);
+	char* exception; // TODO change function, 1 printf instruction
 
 	if (errorType == C_PLAYER_A || errorType == C_PLAYER_B) {
 		printf("INVALID OPERATION \"%.*s \": %s\n", len - 1, command, OTHER_PLAYER_EXPECTED_CHAR);
 	}
 	else if (errorType == C_INVALID) {
 		printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command, WRONG_COMMAND_CHAR);
+	}
+	else if (errorType == C_WRONG_ARGS) {
+		printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command, "WRONG ARGUMENTS");
 	}
 	else if (errorType == C_NOT_ALL_SHIPS_PLACED) {
 		printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command, SHIP_NOT_ALL_SHIPS_PLACED_CHAR);
@@ -90,6 +96,17 @@ void handle_invalid_command(char command[], int errorType) {
 		printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command,
 			PLACING_SHIP_ON_REEF_CHAR);
 	}
+	else if (errorType == C_SHIP_MOVED_ALREADY) {
+		printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command,
+			SHIP_MOVED_ALREADY_CHAR);
+	}
+	else if (errorType == C_SHIP_WENT_FROM_BOARD) {
+		printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command,
+			SHIP_WENT_FROM_BOARD_CHAR);
+	}
+	else {
+		printf("lolz\n");
+	}
 
 	
 
@@ -97,16 +114,31 @@ void handle_invalid_command(char command[], int errorType) {
 	exit(1);
 }
 
-void handle_player_command(char command[], board_t** board, player_t** players, dim_t* dim, int playerId) {
+void handle_player_command(char command[], board_t** board, player_t** players, dim_t* dim, int playerId, int shoots) {
 	
 	if (is_correct_command(command, PLACE_SHIP_CHAR)) {
 		place_ship(command, board, players[playerId], dim);
 	}
 	else if (is_correct_command(command, SHOOT_CHAR)) {
-		shoot(command, board, dim, players, playerId); //FIXME check if it works
+	/*
+		if (extended) {
+			shoot_extended();
+			return;
+		}
+	*/
+		assert(shoots == 0);
+		if (shoots == 1) {
+			handle_invalid_command(command, C_INVALID);
+		}
+		shoots++;
+		shoot_default(command, board, dim, players, playerId);
+	}
+	else if (is_correct_command(command, MOVE_CHAR)) {
+		//(command, board, dim, player);
+		move(command, board, dim, players[playerId]);
 	}
 	else {
-		handle_invalid_command(command, C_INVALID); // TODO: pass accurate args
+		handle_invalid_command(command, C_INVALID);
 	}
 	return;
 }
@@ -150,14 +182,17 @@ void set_init_position(char command[], player_t** players, dim_t* dim) {
 
 	int playerId = get_player_id(P);
 
-	if (argc != 5 || playerId == -1) {
+	if (argc != 5) {
 		handle_invalid_command(command, C_INVALID);
+	}
+	if (playerId == ERROR) {
+		handle_invalid_command(command, C_WRONG_ARGS);
 	}
 	if ((yL < 0 || yL > dim->ROWS) ||
 		(xL < 0 || xL > dim->COLS) ||
 		(xR < xL || yR < yL) ||
 		(xR > dim->COLS || yR > dim->ROWS)) {
-		handle_invalid_command(command, C_INVALID);
+		handle_invalid_command(command, C_WRONG_ARGS);
 	}
 
 	players[playerId]->rowLow = yL;
