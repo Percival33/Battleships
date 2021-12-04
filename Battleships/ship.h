@@ -6,6 +6,7 @@ typedef struct ship{
 	field_t head;
 	int direction;
 	int moved;
+	int shots;
 	int damaged[MAX_SHIP_LENGTH];
 }ship_t;
 

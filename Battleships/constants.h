@@ -30,6 +30,10 @@ const char PLACING_SHIP_TOO_CLOSE_TO_OTHER_SHIP_CHAR[];
 const char SHIP_MOVED_ALREADY_CHAR[];
 const char SHIP_CANNOT_MOVE_CHAR[];
 const char SHIP_WENT_FROM_BOARD_CHAR[];
+const char SHIP_CANNOT_SHOOT_CHAR[];
+const char TOO_MANY_SHOOTS_CHAR[];
+const char SHOOTING_TOO_FAR_CHAR[];
+
 
 const int dx[]; 
 const int dy[];
@@ -90,6 +94,9 @@ enum Commands {
 	C_SHIP_CANNOT_MOVE = 1011,
 	C_SHIP_WENT_FROM_BOARD = 1012,
 	C_EXTENDED = 1013,
+	C_SHIP_CANNOT_SHOOT = 1014,
+	C_TOO_MANY_SHOOTS = 1015,
+	C_SHOOTING_TOO_FAR = 1016,
 
 
 	C_IN = 104,					// Switching command type 

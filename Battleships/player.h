@@ -22,9 +22,14 @@ void player_free(player_t** players);
 
 
 /*
-	Function handles input validates and shoot field
+	Function handles input validates and shoot field, if EXTENDED_SHIPS if off
 */
 void shoot_default(char command[], struct board_t** board, struct dim_t* dim, struct player_t** players, int playerId);
+
+/*
+	Function handles input validates and shoot field, if EXTENDED_SHIPS if on
+*/
+void shoot_extended(char command[], struct board_t** board, struct dim_t* dim, struct player_t** players, int playerId);
 
 /*
 	Function counts all remaining parts of ships

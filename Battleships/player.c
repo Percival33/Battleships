@@ -109,15 +109,15 @@ void damage_ship(board_t** board, player_t** players, field_t field) {
 }
 
 void shoot_default(char command[], board_t** board, dim_t* dim, player_t** players, int playerId) {
-	field_t field;
-	int argc = sscanf(command, "%*s %d %d", &field.y, &field.x);
+	field_t target;
+	int argc = sscanf(command, "%*s %d %d", &target.y, &target.x);
 
 	assert(players[playerId]->shipPlaced <= get_fleet_size(players[playerId]));
 
 	if (argc != 2) {
 		handle_invalid_command(command, C_INVALID);
 	}
-	if (!inside(dim, &field)) {
+	if (!inside(dim, &target)) {
 		//printf("FIELD DOES NOT EXIST\n");
 		handle_invalid_command(command, C_FIELD_DOES_NOT_EXIST);
 	}
@@ -128,7 +128,7 @@ void shoot_default(char command[], board_t** board, dim_t* dim, player_t** playe
 
 	//printf("y: %d x: %d\n", field.y, field.x);
 
-	damage_ship(board, players, field);
+	damage_ship(board, players, target);
 
 	return;
 }
@@ -233,8 +233,63 @@ int get_dist(field_t a, field_t b) {
 	return deltaX + deltaY;
 }
 
-int get_number_of_moves(int cls) {
-	if (cls == S_CAR)
-		return CAR_MOVES;
-	return OTHER_MOVES;
+int get_number_of_shots(int cls) {
+	return cls;
+}
+
+void shoot_extended(char command[], board_t** board, dim_t* dim, player_t** players, int playerId) {
+	//SHOOT i C y x
+
+	field_t target;
+	char clsChar[MAX_SHIP_LENGTH];
+	int shipId;
+	int argc = sscanf(command, "%*s %d %s %d %d", &shipId, clsChar, &target.y, &target.x);
+
+	int cls = get_class(clsChar);
+
+	assert(players[playerId]->shipPlaced <= get_fleet_size(players[playerId]));
+
+	if (argc != 4) {
+		handle_invalid_command(command, C_INVALID);
+	}
+	if (cls == ERROR || shipId >= 10 || players[playerId]->ships[cls][shipId].created == False) {
+		handle_invalid_command(command, C_WRONG_ARGS);
+	}
+	if (!inside(dim, &target)) {
+		handle_invalid_command(command, C_FIELD_DOES_NOT_EXIST);
+	}
+	if (players[PLAYER_A]->shipPlaced + players[PLAYER_B]->shipPlaced !=
+		get_fleet_size(players[PLAYER_A]) + get_fleet_size(players[PLAYER_B])) {
+		handle_invalid_command(command, C_NOT_ALL_SHIPS_PLACED);
+	}
+	
+	ship_t ship = players[playerId]->ships[cls][shipId];
+	
+	if (ship.damaged[1] == True) {
+		handle_invalid_command(command, C_SHIP_CANNOT_SHOOT);
+	}
+	if (ship.shots == get_number_of_shots(cls)) {
+		handle_invalid_command(command, C_TOO_MANY_SHOOTS);
+	}
+	
+	field_t cannon = ship.head;
+	cannon.x += dx[ship.direction];
+	cannon.y += dy[ship.direction];
+
+	if (get_shooting_range(cls) < get_dist(cannon, target)) {
+		handle_invalid_command(command, C_SHOOTING_TOO_FAR);
+	}
+
+	/*
+		1. the ship has not destroyed cannon (SHIP CANNOT SHOOT),
+		2. the ship is not shooting too many shots (TOO MANY SHOOTS),
+		3. the ship is shooting in the cannons range(SHOOTING TOO FAR).
+	*/
+
+	ship.shots++;
+
+	players[playerId]->ships[cls][shipId] = ship;
+	damage_ship(board, players, target);
+
+	return;
 }

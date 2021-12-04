@@ -1,5 +1,9 @@
 #define _CRT_SECURE_NO_WARNINGS
 
+/*
+	TODO: move functions to adequate files
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -30,7 +34,7 @@ bool check_coords_inside_player_area(field_t field, int dir, int cls, player_t* 
 	
 	}
 	return True;
-}
+} 
 
 bool check_coords_inside_board(field_t field, int dir, int cls, player_t* player, board_t** board,
 	dim_t* dim) {
@@ -55,8 +59,7 @@ bool check_coords_inside_board(field_t field, int dir, int cls, player_t* player
 
 	}
 	return True;
-}
-
+} 
 
 bool ship_placed(int cls, int id, player_t* player) {
 	for (int i = 0; i < 10; i++) {
@@ -357,6 +360,12 @@ int check_if_free_to_go(board_t** board, player_t* player, dim_t* dim, int cls, 
 	add_ship(board, ship.head, player, cls, ship.direction, shipId);
 
 	return True;
+}
+
+int get_number_of_moves(int cls) {
+	if (cls == S_CAR)
+		return CAR_MOVES;
+	return OTHER_MOVES;
 }
 
 void move(char command[], board_t** board, dim_t* dim, player_t* player, int extendedShips) {

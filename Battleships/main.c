@@ -60,15 +60,25 @@ void clear_moved(player_t* player) {
 	return;
 }
 
+void clear_shots(player_t* player) {
+	for (int cls = S_DES; cls <= S_CAR; cls++) {
+		for (int shipId = 0; shipId < MAX_SHIPS_NUMBER; shipId++) {
+			player->ships[cls][shipId].shots = 0;
+		}
+	}
+	return;
+}
+
 void handle_player_ends_turn(char command[], int commandId, player_t** players, int* activeCommandType,
-	int* currentPlayer, int* shoots) {
+	int* currentPlayer, int* shots) {
 	
 	if (*activeCommandType == commandId) {
 		check_winner(players);
 		*activeCommandType = C_NULL;
 		*currentPlayer = C_NULL;
-		*shoots = 0;
+		*shots = 0;
 		clear_moved(players[commandId]);
+		clear_shots(players[commandId]);
 	}
 	else {
 		handle_invalid_command(command, commandId);
@@ -100,7 +110,7 @@ int main() {
 	set_default_fleet(players);
 
 	char command[MAX_COMMAND_LENGTH];
-	int shoots = 0;
+	int shots = 0;
 
 	while (!quit) {
 		if (fgets(command, MAX_COMMAND_LENGTH - 2, stdin) == NULL)
@@ -154,15 +164,15 @@ int main() {
 					break;
 
 				case C_PLAYER_TYPE:
-					handle_player_command(command, board, players, dim, currentPlayer, &shoots, extendedShips);
+					handle_player_command(command, board, players, dim, currentPlayer, &shots, extendedShips);
 					break;
 
 				case PLAYER_A:
-					handle_player_ends_turn(command, commandId, players, &activeCommandType, &currentPlayer, &shoots);
+					handle_player_ends_turn(command, commandId, players, &activeCommandType, &currentPlayer, &shots);
 					break;
 
 				case PLAYER_B:
-					handle_player_ends_turn(command, commandId, players, &activeCommandType, &currentPlayer, &shoots);
+					handle_player_ends_turn(command, commandId, players, &activeCommandType, &currentPlayer, &shots);
 					break;
 
 				case C_INVALID:

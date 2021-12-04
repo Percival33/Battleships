@@ -41,6 +41,84 @@ bool is_player_type_command(char command[]) {
 	return False;
 }
 
+dim_t set_dim_size(char command[]) {
+	int y;
+	int x;
+	int argc = sscanf(command, "%*s %d %d", &y, &x);
+
+	if (argc != 2 || y <= 0 || x <= 0) {
+		handle_invalid_command(command, C_INVALID);
+	}
+
+	dim_t dim;
+	dim.ROWS = y;
+	dim.COLS = x;
+	return dim;
+}
+
+void set_board_size(char command[], board_t** board, dim_t* dim) {
+	if (dim->ROWS != DEFAULT_COLS_NUMBER && dim->COLS != DEFAULT_COLS_NUMBER) {
+		handle_invalid_command(command, C_INVALID);
+	}
+	board_free(board, dim);
+	dim_t dim_local = set_dim_size(command);
+	dim->ROWS = dim_local.ROWS;
+	dim->COLS = dim_local.COLS;
+	board = board_init(dim);
+	return;
+}
+
+void set_init_position(char command[], player_t** players, dim_t* dim) {
+	//INIT_POSITION P y1 x1 y2 x2 
+	int yL;
+	int yR;
+	int xL;
+	int xR;
+	char P;
+
+	int argc = sscanf(command, "%*s %c %d %d %d %d", &P, &yL, &xL, &yR, &xR);
+
+	int playerId = get_player_id(P);
+
+	if (argc != 5) {
+		handle_invalid_command(command, C_INVALID);
+	}
+	if (playerId == ERROR) {
+		handle_invalid_command(command, C_WRONG_ARGS);
+	}
+	if ((yL < 0 || yL > dim->ROWS) ||
+		(xL < 0 || xL > dim->COLS) ||
+		(xR < xL || yR < yL) ||
+		(xR > dim->COLS || yR > dim->ROWS)) {
+		handle_invalid_command(command, C_WRONG_ARGS);
+	}
+
+	players[playerId]->rowLow = yL;
+	players[playerId]->rowHigh = yR + 1;
+	players[playerId]->colLow = xL;
+	players[playerId]->colHigh = xR + 1;
+
+
+	return;
+}
+
+void set_reef(char command[], board_t** board, dim_t* dim) {
+	int y;
+	int x;
+	int argc = sscanf(command, "%*s %d %d", &y, &x);
+	if (argc != 2) {
+		handle_invalid_command(command, C_INVALID);
+	}
+
+	if (y < 0 || y >= dim->ROWS || x < 0 || x >= dim->COLS) {
+		handle_invalid_command(command, C_REEF_NOT_ON_BOARD);
+	}
+
+	board[y][x].type = B_REEF;
+	return;
+
+}
+
 int get_command_type(char command[]) {
 
 	if (is_correct_command(command, STATE_CHAR)) {
@@ -63,7 +141,7 @@ int get_command_type(char command[]) {
 	}
 
 
-	else if(is_player_type_command(command)) {
+	else if (is_player_type_command(command)) {
 		return C_PLAYER_TYPE;
 	}
 	else {
@@ -130,6 +208,15 @@ void handle_invalid_command(char command[], int errorType) { //TODO fix readabil
 	case C_SHIP_WENT_FROM_BOARD:
 		exception = SHIP_WENT_FROM_BOARD_CHAR;
 		break;
+	case C_SHIP_CANNOT_SHOOT:
+		exception = SHIP_CANNOT_SHOOT_CHAR;
+		break;
+	case C_TOO_MANY_SHOOTS:
+		exception = TOO_MANY_SHOOTS_CHAR;
+		break;
+	case C_SHOOTING_TOO_FAR:
+		exception = SHOOTING_TOO_FAR_CHAR;
+		break;
 	}
 	if (STOS) {
 		printf("INVALID OPERATION \"%.*s \": %s\n", len - 1, command, exception);		// (-.-)
@@ -137,11 +224,11 @@ void handle_invalid_command(char command[], int errorType) { //TODO fix readabil
 	else {
 		printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command, exception);
 	}
-	
+
 	exit(1);
 }
 
-void handle_player_command(char command[], board_t** board, player_t** players, dim_t* dim, int playerId, int* shoots, int extendedShips) {
+void handle_player_command(char command[], board_t** board, player_t** players, dim_t* dim, int playerId, int* shots, int extendedShips) {
 	
 	if (is_correct_command(command, PLACE_SHIP_CHAR)) {
 		place_ship(command, board, players[playerId], dim);
@@ -149,16 +236,15 @@ void handle_player_command(char command[], board_t** board, player_t** players, 
 	else if (is_correct_command(command, SHOOT_CHAR)) {
 	
 		if (extendedShips) {
-			//shoot_extended(); TODO write function
-			//*shoots++ ??
+			shoot_extended(command, board, dim, players, playerId);
 			return;
 		}
 	
-		assert(*shoots == 0);
-		if (*shoots == 1) {
+		assert(*shots == 0);
+		if (*shots == 1) {
 			handle_invalid_command(command, C_INVALID);
 		}
-		*shoots += 1;
+		*shots += 1;
 		shoot_default(command, board, dim, players, playerId);
 	}
 	else if (is_correct_command(command, MOVE_CHAR)) {
@@ -168,84 +254,6 @@ void handle_player_command(char command[], board_t** board, player_t** players, 
 		handle_invalid_command(command, C_INVALID);
 	}
 	return;
-}
-
-dim_t set_dim_size(char command[]) {
-	int y;
-	int x;
-	int argc = sscanf(command, "%*s %d %d", &y, &x);
-
-	if (argc != 2 || y <= 0 || x <= 0) {
-		handle_invalid_command(command, C_INVALID);
-	}
-	
-	dim_t dim;
-	dim.ROWS = y;
-	dim.COLS = x;
-	return dim;
-}
-
-void set_board_size(char command[], board_t** board, dim_t* dim) {
-	if (dim->ROWS != DEFAULT_COLS_NUMBER && dim->COLS != DEFAULT_COLS_NUMBER) {
-		handle_invalid_command(command, C_INVALID);
-	}
-	board_free(board, dim);
-	dim_t dim_local = set_dim_size(command); 
-	dim->ROWS = dim_local.ROWS;
-	dim->COLS = dim_local.COLS;
-	board = board_init(dim);
-	return;
-}
-
-void set_init_position(char command[], player_t** players, dim_t* dim) {
-	//INIT_POSITION P y1 x1 y2 x2 
-	int yL;
-	int yR;
-	int xL;
-	int xR;
-	char P;
-
-	int argc = sscanf(command, "%*s %c %d %d %d %d", &P, &yL, &xL, &yR, &xR);
-
-	int playerId = get_player_id(P);
-
-	if (argc != 5) {
-		handle_invalid_command(command, C_INVALID);
-	}
-	if (playerId == ERROR) {
-		handle_invalid_command(command, C_WRONG_ARGS);
-	}
-	if ((yL < 0			|| yL > dim->ROWS)	||
-		(xL < 0			|| xL > dim->COLS)	||
-		(xR < xL		|| yR < yL)			||
-		(xR > dim->COLS	|| yR > dim->ROWS)) {
-		handle_invalid_command(command, C_WRONG_ARGS);
-	}
-
-	players[playerId]->rowLow = yL;
-	players[playerId]->rowHigh = yR + 1;
-	players[playerId]->colLow = xL;
-	players[playerId]->colHigh = xR + 1;
-
-
-	return;
-}
-
-void set_reef(char command[], board_t** board, dim_t* dim) {
-	int y;
-	int x;
-	int argc = sscanf(command, "%*s %d %d", &y, &x);
-	if (argc != 2) {
-		handle_invalid_command(command, C_INVALID);
-	}
-
-	if (y < 0 || y >= dim->ROWS || x < 0 || x >= dim->COLS) {
-		handle_invalid_command(command, C_REEF_NOT_ON_BOARD);
-	}
-
-	board[y][x].type = B_REEF;
-	return;
-
 }
 
 void handle_state_commands(char command[], int *nextPlayer, board_t** board, player_t** players, dim_t* dim, int* extendedShips) {
