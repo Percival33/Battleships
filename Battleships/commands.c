@@ -36,7 +36,8 @@ bool is_player_type_command(char command[]) {
 	if (is_correct_command(command, PLACE_SHIP_CHAR)	||
 		is_correct_command(command, SHOOT_CHAR)			||
 		is_correct_command(command, MOVE_CHAR)			||
-		is_correct_command(command, PRINT_CHAR)) {
+		is_correct_command(command, PRINT_CHAR)			||
+		is_correct_command(command, SPY_CHAR)) {
 		return True;
 	}
 	return False;
@@ -217,6 +218,9 @@ void handle_invalid_command(char command[], int errorType) { //TODO fix readabil
 	case C_SHOOTING_TOO_FAR:
 		exception = SHOOTING_TOO_FAR_CHAR;
 		break;
+	case C_CANNOT_SEND_PLANE:
+		exception = CANNOT_SEND_PLANE_CHAR;
+		break;
 	}
 	if (STOS) {
 		printf("INVALID OPERATION \"%.*s \": %s\n", len - 1, command, exception);		// (-.-)
@@ -227,6 +231,64 @@ void handle_invalid_command(char command[], int errorType) { //TODO fix readabil
 
 	exit(1);
 }
+
+void spy(char command[], board_t** board, dim_t* dim, player_t** players, int playerId) {
+	//SPY i y x
+	int shipId;
+	field_t target;
+	int argc = sscanf(command, "%*s %d %d %d", &shipId, &target.y, &target.x);
+
+	if (argc != 3) {
+		handle_invalid_command(command, C_INVALID);
+	}
+	if (shipId >= 10 || players[playerId]->ships[S_CAR][shipId].created == False) { // ship does not exist
+		handle_invalid_command(command, C_WRONG_ARGS);
+	}
+	if (players[playerId]->ships[S_CAR][shipId].damaged[1] == True) { // cannon destroyed
+		handle_invalid_command(command, C_CANNOT_SEND_PLANE);
+	}
+	if (players[playerId]->ships[S_CAR][shipId].spies == S_CAR) { // all spies sent
+		handle_invalid_command(command, C_ALL_PLANES_SENT);
+	}
+
+	players[playerId]->ships[S_CAR][shipId].spies++;
+
+	for (int dir = -1; dir <= NW; dir++) {
+		field_t newTarget = target;
+
+		if(dir != -1) {
+			newTarget.x += dx[dir];
+			newTarget.y += dy[dir];
+		}
+
+		if (check_field_on_board(dim, newTarget) == False) {
+			continue;
+		}
+
+		int spy = board[newTarget.y][newTarget.x].spy;
+
+		if (spy == B_EMPTY) {
+			spy = playerId;
+		}
+		else if (spy != playerId) {
+			spy = B_VISIBLE_BOTH;
+		}
+		else {
+			assert(spy == playerId);
+		}
+		assert(spy != B_EMPTY);
+
+		board[newTarget.y][newTarget.x].spy = spy;
+	}
+	// sent spy, mark board field as seen by spy, shots++, spies++
+
+	/*
+		1. the ship has not destroyed cannon (CANNOT SEND PLANE),
+		2. the ship is not sending too many planes (ALL PLANES SENT).
+	*/
+	return;
+}
+
 
 void handle_player_command(char command[], board_t** board, player_t** players, dim_t* dim, int playerId, int* shots, int extendedShips) {
 	
@@ -244,18 +306,22 @@ void handle_player_command(char command[], board_t** board, player_t** players, 
 		if (*shots == 1) {
 			handle_invalid_command(command, C_INVALID);
 		}
-		*shots += 1;
 		shoot_default(command, board, dim, players, playerId);
+		*shots += 1;
+	}
+	else if (is_correct_command(command, SPY_CHAR)) {
+		spy(command, board, dim, players, playerId);
+		*shots += 1;
 	}
 	else if (is_correct_command(command, MOVE_CHAR)) {
-		move(command, board, dim, players[playerId]);
+		move(command, board, dim, players[playerId], extendedShips);
 	}
 	else if (is_correct_command(command, PRINT_CHAR)) {
 		int x;
 		int argc = sscanf(command, "%*s %d", &x);
 		assert(argc == 1);
 		assert(x == 0 || x == 1);
-		player_board_print(board, dim, players, playerId, x);
+		player_board_print(board, dim, players, playerId, x, extendedShips);
 	}
 	else {
 		handle_invalid_command(command, C_INVALID);

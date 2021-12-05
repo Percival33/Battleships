@@ -1,4 +1,5 @@
 #pragma once
+#include "constants.h"
 
 typedef struct dimensions {
 	int ROWS;
@@ -8,8 +9,8 @@ typedef struct dimensions {
 typedef struct board {
 	int type;
 	int visible;
-	int visTimes;
 	int visited;
+	int spy;
 	int playerId;
 	int cls;
 	int shipId;
@@ -39,4 +40,14 @@ void state_board_print(board_t** board, dim_t* dim, int mode, struct player_t** 
 /*
 	Function prints board in PLAYER command
 */
-void player_board_print(board_t** board, dim_t* dim, struct player_t** players, int playerId, int mode);
+void player_board_print(board_t** board, dim_t* dim, struct player_t** players, int playerId, int mode, int extendedShips);
+
+bool check_ship_fits_inside_board(field_t field, int dir, int cls, struct player_t* player, board_t** board,	dim_t* dim);
+
+bool check_around(board_t** board, field_t field, dim_t* dim);
+
+bool check_neighbouring_fields(board_t** board, field_t field, dim_t* dim, int cls, int dir);
+
+bool check_if_free_from_reef(board_t** board, field_t field, int cls, int dir);
+
+bool check_field_on_board(dim_t* dim, field_t field);

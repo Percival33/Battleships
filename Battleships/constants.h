@@ -33,6 +33,9 @@ const char SHIP_WENT_FROM_BOARD_CHAR[];
 const char SHIP_CANNOT_SHOOT_CHAR[];
 const char TOO_MANY_SHOOTS_CHAR[];
 const char SHOOTING_TOO_FAR_CHAR[];
+const char SPY_CHAR[];
+const char CANNOT_SEND_PLANE_CHAR[];
+const char ALL_PLANES_SENT_CHAR[];
 
 
 const int dx[]; 
@@ -64,28 +67,30 @@ enum Consts {
 
 enum Commands {
 	ERROR = 2137, 
-	C_NULL = -1,					// Current command is null
+	C_NULL = -1,						// Current command is null
 	C_QUIT = 'Q',
 
-	C_STATE = 10,				// state command ID
+	C_STATE = 10,						// state command ID
 	C_PLAYER_TYPE = 999,
-	C_STATE_TYPE = 998,			// make sure differs from PLAYER_A
-	C_INVALID = 3,			// Invalid command ID
+	C_STATE_TYPE = 998,					// make sure differs from PLAYER_A
+	C_INVALID = 3,						// Invalid command ID
 	
-	C_PLACE_SHIP = 4,			// Place ship command
-	C_PRINT = 5,			// Place ship command
-	C_SET_FLEET = 6,			// Place ship command
-	C_NEXT_PLAYER = 7,			// Place ship command
-	C_SHOOT = 8,			// Place ship command
+	C_PLACE_SHIP = 4,			
+	C_PRINT = 5,			
+	C_SET_FLEET = 6,			
+	C_NEXT_PLAYER = 7,			
+	C_SHOOT = 8,			
 	C_SHIP = 9,
 	C_BOARD_SIZE = 10,
+	C_SPY = 11,
+	C_INIT_POSITION = 1005,
+	C_EXTENDED = 1013,
 
 	C_NOT_ALL_SHIPS_PLACED = 1000,
 	C_FIELD_DOES_NOT_EXIST = 1001,
 	C_NOT_IN_STARTING_POSITION = 1002,
 	C_SHIP_ALREADY_PRESENT = 1003,
 	C_ALL_SHIPS_OF_THE_CLASS_ALREADY_SET = 1004,
-	C_INIT_POSITION = 1005,
 	C_REEF_NOT_ON_BOARD = 1006,
 	C_SHIP_ON_REEF = 1007,
 	C_PLACING_SHIP_TOO_CLOSE = 1008,
@@ -93,10 +98,11 @@ enum Commands {
 	C_SHIP_MOVED_ALREADY = 1010,
 	C_SHIP_CANNOT_MOVE = 1011,
 	C_SHIP_WENT_FROM_BOARD = 1012,
-	C_EXTENDED = 1013,
 	C_SHIP_CANNOT_SHOOT = 1014,
 	C_TOO_MANY_SHOOTS = 1015,
 	C_SHOOTING_TOO_FAR = 1016,
+	C_CANNOT_SEND_PLANE = 1017,
+	C_ALL_PLANES_SENT = 1018,
 
 
 	C_IN = 104,					// Switching command type 

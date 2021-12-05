@@ -69,6 +69,13 @@ void clear_shots(player_t* player) {
 	return;
 }
 
+void clear_spies(player_t* player) {
+	for (int shipId = 0; shipId < MAX_SHIPS_NUMBER; shipId++) {
+		player->ships[S_CAR][shipId].spies = 0;
+	}
+	return;
+}
+
 void handle_player_ends_turn(char command[], int commandId, player_t** players, int* activeCommandType,
 	int* currentPlayer, int* shots) {
 	
@@ -79,6 +86,7 @@ void handle_player_ends_turn(char command[], int commandId, player_t** players, 
 		*shots = 0;
 		clear_moved(players[commandId]);
 		clear_shots(players[commandId]);
+		clear_spies(players[commandId]);
 	}
 	else {
 		handle_invalid_command(command, commandId);

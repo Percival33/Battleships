@@ -7,6 +7,7 @@ typedef struct ship{
 	int direction;
 	int moved;
 	int shots;
+	int spies;
 	int damaged[MAX_SHIP_LENGTH];
 }ship_t;
 
@@ -18,4 +19,4 @@ void place_ship(char command[], struct board_t** board, struct player_t* player,
 
 void set_ship(char command[], struct board_t** board, struct player_t** players, struct dim_t* dim);
 
-void move(char command[], struct board_t** board, struct dim_t* dim, struct player_t* player);
+void move(char command[], struct board_t** board, struct dim_t* dim, struct player_t* player, int extendedShips);

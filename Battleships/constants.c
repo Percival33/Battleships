@@ -33,6 +33,9 @@ const char SHIP_WENT_FROM_BOARD_CHAR[] = "SHIP WENT FROM BOARD";
 const char SHIP_CANNOT_SHOOT_CHAR[] = "SHIP CANNOT SHOOT";
 const char TOO_MANY_SHOOTS_CHAR[] = "TOO MANY SHOOTS";
 const char SHOOTING_TOO_FAR_CHAR[] = "SHOOTING TOO FAR";
+const char SPY_CHAR[] = "SPY";
+const char CANNOT_SEND_PLANE_CHAR[] = "CANNOT SEND PLANE";
+const char ALL_PLANES_SENT_CHAR[] = "ALL PLANES SENT";
 
 const int dx[] = { 0, -1, 0, 1, -1, -1, 1, 1};  
 const int dy[] = { 1, 0, -1, 0, 1, -1, -1, 1};
