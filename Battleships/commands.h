@@ -3,7 +3,7 @@
 /*
 	function reads command from input and returns its ID
 */
-int get_command_type(char command[]);
+int get_command_type(char command[], int activeCommandType);
 
 /*
 	function handles invalid command, calls print_invalid_command and exits program

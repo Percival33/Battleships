@@ -35,7 +35,8 @@ bool is_state_type_command(char command[]) {
 bool is_player_type_command(char command[]) {
 	if (is_correct_command(command, PLACE_SHIP_CHAR)	||
 		is_correct_command(command, SHOOT_CHAR)			||
-		is_correct_command(command, MOVE_CHAR)) {
+		is_correct_command(command, MOVE_CHAR)			||
+		is_correct_command(command, PRINT_CHAR)) {
 		return True;
 	}
 	return False;
@@ -119,7 +120,7 @@ void set_reef(char command[], board_t** board, dim_t* dim) {
 
 }
 
-int get_command_type(char command[]) {
+int get_command_type(char command[], int activeCommandType) {
 
 	if (is_correct_command(command, STATE_CHAR)) {
 		return C_STATE;
@@ -136,12 +137,11 @@ int get_command_type(char command[]) {
 		return C_QUIT;
 	}
 
-	else if (is_state_type_command(command)) {
+	else if (activeCommandType == C_STATE && is_state_type_command(command)) {
 		return C_STATE_TYPE;
 	}
-
-
-	else if (is_player_type_command(command)) {
+	else if ((activeCommandType == PLAYER_A || activeCommandType == PLAYER_B)	&&
+			is_player_type_command(command)) { // if player inputs a command and command is correct for a player
 		return C_PLAYER_TYPE;
 	}
 	else {
@@ -250,6 +250,13 @@ void handle_player_command(char command[], board_t** board, player_t** players, 
 	else if (is_correct_command(command, MOVE_CHAR)) {
 		move(command, board, dim, players[playerId]);
 	}
+	else if (is_correct_command(command, PRINT_CHAR)) {
+		int x;
+		int argc = sscanf(command, "%*s %d", &x);
+		assert(argc == 1);
+		assert(x == 0 || x == 1);
+		player_board_print(board, dim, players, playerId, x);
+	}
 	else {
 		handle_invalid_command(command, C_INVALID);
 	}
@@ -263,7 +270,7 @@ void handle_state_commands(char command[], int *nextPlayer, board_t** board, pla
 		int argc = sscanf(command, "%*s %d", &x);
 		assert(argc == 1); 
 		assert(x == 0 || x == 1);
-		board_print(board, dim, x, players);
+		state_board_print(board, dim, x, players);
 	}
 
 	else if (is_correct_command(command, SET_FLEET_CHAR)) {

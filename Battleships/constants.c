@@ -34,8 +34,8 @@ const char SHIP_CANNOT_SHOOT_CHAR[] = "SHIP CANNOT SHOOT";
 const char TOO_MANY_SHOOTS_CHAR[] = "TOO MANY SHOOTS";
 const char SHOOTING_TOO_FAR_CHAR[] = "SHOOTING TOO FAR";
 
-const int dx[] = { 0, -1, 0, 1};  
-const int dy[] = { 1, 0, -1, 0};
+const int dx[] = { 0, -1, 0, 1, -1, -1, 1, 1};  
+const int dy[] = { 1, 0, -1, 0, 1, -1, -1, 1};
 
 /*
 const int MAX_SHIPS_NUMBER = 10;
@@ -111,4 +111,20 @@ int get_move_dir(char dir) {
 		return R;
 	}
 	return ERROR;
+}
+
+int get_shooting_range(int cls) {
+	if (cls == S_CAR) // shooting range is infinite
+		return 1337 * 1337;
+	return cls * cls;
+}
+
+int get_dist(field_t a, field_t b) {
+	int deltaX = a.x - b.x;
+	int deltaY = a.y - b.y;
+
+	deltaX *= deltaX;
+	deltaY *= deltaY;
+
+	return deltaX + deltaY;
 }

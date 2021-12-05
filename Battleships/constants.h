@@ -69,7 +69,7 @@ enum Commands {
 
 	C_STATE = 10,				// state command ID
 	C_PLAYER_TYPE = 999,
-	C_STATE_TYPE = 998,
+	C_STATE_TYPE = 998,			// make sure differs from PLAYER_A
 	C_INVALID = 3,			// Invalid command ID
 	
 	C_PLACE_SHIP = 4,			// Place ship command
@@ -119,6 +119,10 @@ enum Direction {
 	E = 1,
 	S = 2,
 	W = 3, 
+	NE = 4,
+	SE = 5,
+	SW = 6,
+	NW = 7,
 
 	F = 0,			// [F]orward
 	L = -1,			// [L]eft
@@ -129,12 +133,16 @@ enum Board {
 	B_EMPTY = 200,
 	B_BAN = 201,
 	B_REEF = 202,
+	
 
 	B_TAKEN = 203,
 	B_ENGINE = 204,
 	B_CANNON = 205,
 	B_RADAR = 206,
 	B_DESTROYED = 207,
+	
+	B_VISIBLE_BOTH = 209,
+
 };
 
 enum Player {
@@ -150,3 +158,7 @@ int get_class(char cat[]);
 int get_player_id(char P);
 
 int get_move_dir(char dir);
+
+int get_shooting_range(int cls);
+
+int get_dist(field_t a, field_t b);

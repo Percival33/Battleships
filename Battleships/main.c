@@ -120,7 +120,7 @@ int main() {
 			continue;
 		}
 
-		commandId = get_command_type(command);
+		commandId = get_command_type(command, activeCommandType);
 
 		if (activeCommandType == C_NULL) {
 			if ((commandId == PLAYER_A || commandId == PLAYER_B)) {

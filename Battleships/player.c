@@ -103,6 +103,8 @@ void damage_ship(board_t** board, player_t** players, field_t field) {
 		}
 	}
 
+	assert(currShip.damaged[0] == False); // radar was hit, radar range drops to 1, change visible fields
+
 	players[playerId]->ships[cls][shipId] = currShip;
 
 	return;
@@ -215,22 +217,6 @@ int set_next_player(char command[]) {
 	}
 
 	return C_INVALID;
-}
-
-int get_shooting_range(int cls) {
-	if (cls == S_CAR) // shooting range is infinite
-		return 1337 * 1337;
-	return cls * cls;
-}
-
-int get_dist(field_t a, field_t b) {
-	int deltaX = a.x - b.x;
-	int deltaY = a.y - b.y;
-
-	deltaX *= deltaX;
-	deltaY *= deltaY;
-
-	return deltaX + deltaY;
 }
 
 int get_number_of_shots(int cls) {
