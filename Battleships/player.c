@@ -103,7 +103,7 @@ void damage_ship(board_t** board, player_t** players, field_t field) {
 		}
 	}
 
-	assert(currShip.damaged[0] == False); // radar was hit, radar range drops to 1, change visible fields
+	//assert(currShip.damaged[0] == False); // radar was hit, radar range drops to 1, change visible fields
 
 	players[playerId]->ships[cls][shipId] = currShip;
 
