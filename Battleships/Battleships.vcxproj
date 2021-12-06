@@ -144,12 +144,16 @@
     <ClCompile Include="constants.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="player.c" />
+    <ClCompile Include="save.c" />
     <ClCompile Include="ship.c" />
+    <ClCompile Include="vector.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="board.h" />
     <ClInclude Include="commands.h" />
     <ClInclude Include="constants.h" />
+    <ClInclude Include="save.h" />
+    <ClInclude Include="vector.h" />
     <ClInclude Include="player.h" />
     <ClInclude Include="ship.h" />
   </ItemGroup>

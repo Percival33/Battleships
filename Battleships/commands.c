@@ -5,6 +5,8 @@
 #include <string.h>
 #include <assert.h>
 
+#include "vector.h"
+#include "save.h"
 #include "constants.h"
 #include "board.h"
 #include "player.h"
@@ -26,7 +28,9 @@ bool is_state_type_command(char command[]) {
 		is_correct_command(command, INIT_POSITION_CHAR) ||
 		is_correct_command(command, REEF_CHAR)			||
 		is_correct_command(command, SHIP_CHAR)			||
-		is_correct_command(command, "EXTENDED_SHIPS")) {
+		is_correct_command(command, "EXTENDED_SHIPS")	||
+		is_correct_command(command, "SRAND")			||
+		is_correct_command(command, "SAVE")) {
 		return True;
 	}
 	return False;
@@ -329,8 +333,9 @@ void handle_player_command(char command[], board_t** board, player_t** players, 
 	return;
 }
 
-void handle_state_commands(char command[], int *nextPlayer, board_t** board, player_t** players, dim_t* dim, int* extendedShips) {
-	//assert(nextPlayer != NULL);
+void handle_state_commands(char command[], int *nextPlayer, board_t** board,
+	player_t** players, dim_t* dim, int* extendedShips, vector_t* v, vector_t* reefs, int* seed) {
+
 	if (is_correct_command(command, PRINT_CHAR)) {
 		int x;
 		int argc = sscanf(command, "%*s %d", &x);
@@ -357,6 +362,7 @@ void handle_state_commands(char command[], int *nextPlayer, board_t** board, pla
 	
 	else if (is_correct_command(command, REEF_CHAR)) {
 		set_reef(command, board, dim);
+		push_back(reefs, command);
 	}
 	
 	else if (is_correct_command(command, SHIP_CHAR)) {
@@ -365,6 +371,17 @@ void handle_state_commands(char command[], int *nextPlayer, board_t** board, pla
 	
 	else if (is_correct_command(command, "EXTENDED_SHIPS")) {
 		*extendedShips = True;
+	}
+
+	else if (is_correct_command(command, "SRAND")) {
+		assert(sizeof(seed) == sizeof(int*));
+		int argc = sscanf(command, "%*s %d", seed);
+		assert(sizeof(*seed) == sizeof(int));
+		srand(*seed);
+	}
+
+	else if (is_correct_command(command, "SAVE")) {
+		save_geme_state(v, reefs, board, dim, players, nextPlayer, extendedShips, seed);
 	}
 	
 	else {

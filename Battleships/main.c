@@ -3,7 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <time.h>
 
+#include "vector.h"
+#include "save.h"
 #include "board.h"
 #include "commands.h"
 #include "constants.h"
@@ -77,11 +80,13 @@ void clear_spies(player_t* player) {
 }
 
 void handle_player_ends_turn(char command[], int commandId, player_t** players, int* activeCommandType,
-	int* currentPlayer, int* shots) {
+	int* currentPlayer, int* nextPlayer, int* shots) {
 	
 	if (*activeCommandType == commandId) {
 		check_winner(players);
 		*activeCommandType = C_NULL;
+		assert(*currentPlayer == PLAYER_A || *currentPlayer == PLAYER_B);
+		*nextPlayer = (*currentPlayer == PLAYER_A ? PLAYER_B : PLAYER_A);
 		*currentPlayer = C_NULL;
 		*shots = 0;
 		clear_moved(players[commandId]);
@@ -103,22 +108,31 @@ int main() {
 	int nextPlayer;
 	int currentPlayer;
 	int extendedShips;
-	
+	int seed; 
+	int shots;
 	
 	extendedShips = False;
 	quit = False;
 	event = C_NULL;
 	activeCommandType = C_NULL;
 	nextPlayer = PLAYER_A;
+	seed = DEFAULT_SEED;
+	shots = 0;
 	
 	dim_t* dim = dim_init(DEFAULT_ROWS_NUMBER, DEFAULT_COLS_NUMBER);
 	player_t** players = init_players(dim);
 	board_t** board = board_init(dim);
-	
+	vector_t savedCommands, reefs;
+
+	init(&savedCommands);
+	init(&reefs);
+
 	set_default_fleet(players);
 
 	char command[MAX_COMMAND_LENGTH];
-	int shots = 0;
+
+	//printf("%d\n", sizeof(command));
+	//printf("%d", sizeof(char));
 
 	while (!quit) {
 		if (fgets(command, MAX_COMMAND_LENGTH - 2, stdin) == NULL)
@@ -168,7 +182,7 @@ int main() {
 					break;
 
 				case C_STATE_TYPE:
-					handle_state_commands(command, &nextPlayer, board, players, dim, &extendedShips);
+					handle_state_commands(command, &nextPlayer, board, players, dim, &extendedShips, &savedCommands, &reefs, &seed);
 					break;
 
 				case C_PLAYER_TYPE:
@@ -176,11 +190,11 @@ int main() {
 					break;
 
 				case PLAYER_A:
-					handle_player_ends_turn(command, commandId, players, &activeCommandType, &currentPlayer, &shots);
+					handle_player_ends_turn(command, commandId, players, &activeCommandType, &currentPlayer, &nextPlayer, &shots);
 					break;
 
 				case PLAYER_B:
-					handle_player_ends_turn(command, commandId, players, &activeCommandType, &currentPlayer, &shots);
+					handle_player_ends_turn(command, commandId, players, &activeCommandType, &currentPlayer, &nextPlayer, &shots);
 					break;
 
 				case C_INVALID:
@@ -190,6 +204,7 @@ int main() {
 		}
 			
 	}
+	//save_all_ships_of_player(&savedCommands, players[PLAYER_A]);
 	free_memory(board, dim, players);
 
 	return 0;

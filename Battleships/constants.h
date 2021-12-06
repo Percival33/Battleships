@@ -55,6 +55,7 @@ typedef enum Bool {
 } bool;
 
 enum Consts {
+	DEFAULT_SEED = 1549064286,			// 523 * 33 * 2137 * 42
 	MAX_SHIPS_NUMBER = 10,
 	MAX_SHIP_LENGTH = 5,
 	MAX_SHIP_TYPE_NUMBER = 6,
