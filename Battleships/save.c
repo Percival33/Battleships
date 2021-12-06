@@ -189,6 +189,9 @@ void save_given_seed(vector_t* v, int* seed) {
 void save_geme_state(vector_t* v, vector_t* reefs, board_t** board, dim_t* dim,
 	player_t** players, int* nextPlayer, int extendedShips, int* seed) {
 
+	free(v->ptr);
+	init(v);
+	
 	save_board_size(v, dim);
 	save_next_player(v, nextPlayer);
 
@@ -207,6 +210,7 @@ void save_geme_state(vector_t* v, vector_t* reefs, board_t** board, dim_t* dim,
 	if(*seed != DEFAULT_SEED)
 		save_given_seed(v, seed);
 	
+
 	printf("%s\n", STATE_CHAR);
 	for (int i = 0; i < v->count; i++) {
 		printf("%s\n", v->ptr[i].text);

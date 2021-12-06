@@ -233,7 +233,8 @@ field_t rotate(field_t field, int* dir, int moveDir, int cls) {
 	return field;
 }
 
-int check_if_free_to_go(board_t** board, player_t* player, dim_t* dim, int cls, int shipId, int moveDir) { //TODO refactor function, add_ship in move function
+	//TODO refactor function, add_ship in move function
+int check_if_free_to_go(board_t** board, player_t* player, dim_t* dim, int cls, int shipId, int moveDir) { 
 	ship_t ship = player->ships[cls][shipId];
 
 	int currDir = ship.direction;
