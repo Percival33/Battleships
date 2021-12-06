@@ -62,6 +62,6 @@ void set_init_position(char command[], struct player_t** players, dim_t* dim);
 
 void remove_from_board(board_t** board, field_t field, int cls, int dir);
 
-void place_ship(char command[], board_t** board, player_t* player, dim_t* dim);
+void place_ship(char command[], board_t** board, struct player_t* player, dim_t* dim);
 
-void set_ship(char command[], board_t** board, player_t** players, dim_t* dim);
+void set_ship(char command[], board_t** board, struct player_t** players, dim_t* dim);

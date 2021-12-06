@@ -93,7 +93,19 @@ int validate_move(board_t** board, dim_t* dim, ship_t ship, player_t* player,
 	return True;
 }
 
-	//TODO refactor function, add_ship in move function
+void add_moved_ship(board_t** board, dim_t* dim, player_t* player, ship_t ship, 
+	field_t currField, int currDir, int cls, int shipId) {
+
+	ship.direction = currDir;
+	ship.head = currField;
+	ship.moved++;
+
+	player->ships[cls][shipId] = ship;
+
+	add_ship(board, dim, ship.head, player, cls, ship.direction, shipId);
+	return;
+}
+
 int check_if_free_to_go(board_t** board, player_t* player, dim_t* dim, int cls, int shipId, int moveDir) { 
 	ship_t ship = player->ships[cls][shipId];
 	int is_valid;
@@ -112,13 +124,7 @@ int check_if_free_to_go(board_t** board, player_t* player, dim_t* dim, int cls, 
 	}
 
 	if (moveDir == F) { // move was only forward, adding ship in its new position
-		ship.direction = currDir;
-		ship.head = currField;
-		ship.moved++;
-
-		player->ships[cls][shipId] = ship;
-
-		add_ship(board, dim, ship.head, player, cls, ship.direction, shipId);
+		add_moved_ship(board, dim, player, ship, currField, currDir, cls, shipId);
 		return True;
 	}
 
@@ -131,13 +137,7 @@ int check_if_free_to_go(board_t** board, player_t* player, dim_t* dim, int cls, 
 		return is_valid;
 	}
 
-	ship.direction = currDir;
-	ship.head = currField;
-	ship.moved++;
-
-	player->ships[cls][shipId] = ship;
-
-	add_ship(board, dim, ship.head, player, cls, ship.direction, shipId);
+	add_moved_ship(board, dim, player, ship, currField, currDir, cls, shipId);
 
 	return True;
 }

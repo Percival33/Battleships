@@ -24,7 +24,7 @@ void run_ai(vector_t* v, vector_t* reefs, board_t** board, dim_t* dim,
 	
 	printf("%s\n %s\n %s\n", STATE_CHAR, "PRINT 0", STATE_CHAR);
 
-	do_ai();
+	//do_ai();
 
 	printf("%s\n %s\n %s\n", STATE_CHAR, "PRINT 0", STATE_CHAR);
 
