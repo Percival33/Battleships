@@ -208,25 +208,18 @@ void extended_print_num_cols_rows(int COLS) {
 char extended_char_field(board_t** board, int row, int col) {
 	switch (board[row][col].type) {
 	case B_EMPTY:
-		//printf(" ");
 		return ' ';
 	case B_TAKEN:
-		//printf("+");
 		return '+';
 	case B_ENGINE:
-		//printf("%%");
 		return '%';
 	case B_CANNON:
-		//printf("!");
 		return '!';
 	case B_RADAR:
-		//printf("@");
 		return '@';
 	case B_DESTROYED:
-		//printf("x");
 		return 'x';
 	case B_REEF:
-		//printf("#");
 		return '#';
 	}
 	return '=';
@@ -412,4 +405,236 @@ void player_board_print(board_t** board, dim_t* dim, player_t** players, int pla
 
 	return;
 
+}
+
+void set_reef(char command[], board_t** board, dim_t* dim) {
+	int y;
+	int x;
+	int argc = sscanf(command, "%*s %d %d", &y, &x);
+	if (argc != 2) {
+		handle_invalid_command(command, C_INVALID);
+	}
+
+	if (y < 0 || y >= dim->ROWS || x < 0 || x >= dim->COLS) {
+		handle_invalid_command(command, C_REEF_NOT_ON_BOARD);
+	}
+
+	board[y][x].type = B_REEF;
+	return;
+
+}
+
+
+dim_t set_dim_size(char command[]) {
+	int y;
+	int x;
+	int argc = sscanf(command, "%*s %d %d", &y, &x);
+
+	if (argc != 2 || y <= 0 || x <= 0) {
+		handle_invalid_command(command, C_INVALID);
+	}
+
+	dim_t dim;
+	dim.ROWS = y;
+	dim.COLS = x;
+	return dim;
+}
+
+void set_board_size(char command[], board_t** board, dim_t* dim) {
+	if (dim->ROWS != DEFAULT_COLS_NUMBER && dim->COLS != DEFAULT_COLS_NUMBER) {
+		handle_invalid_command(command, C_INVALID);
+	}
+	board_free(board, dim);
+	dim_t dim_local = set_dim_size(command);
+	dim->ROWS = dim_local.ROWS;
+	dim->COLS = dim_local.COLS;
+	board = board_init(dim);
+	return;
+}
+
+
+void set_init_position(char command[], player_t** players, dim_t* dim) {
+	//INIT_POSITION P y1 x1 y2 x2 
+	int yL;
+	int yR;
+	int xL;
+	int xR;
+	char P;
+
+	int argc = sscanf(command, "%*s %c %d %d %d %d", &P, &yL, &xL, &yR, &xR);
+
+	int playerId = get_player_id(P);
+
+	if (argc != 5) {
+		handle_invalid_command(command, C_INVALID);
+	}
+	if (playerId == ERROR) {
+		handle_invalid_command(command, C_WRONG_ARGS);
+	}
+	if ((yL < 0 || yL > dim->ROWS) ||
+		(xL < 0 || xL > dim->COLS) ||
+		(xR < xL || yR < yL) ||
+		(xR > dim->COLS || yR > dim->ROWS)) {
+		handle_invalid_command(command, C_WRONG_ARGS);
+	}
+
+	players[playerId]->rowLow = yL;
+	players[playerId]->rowHigh = yR + 1;
+	players[playerId]->colLow = xL;
+	players[playerId]->colHigh = xR + 1;
+
+
+	return;
+}
+
+void remove_from_board(board_t** board, field_t field, int cls, int dir) {
+	for (int len = 0; len < cls; len++) {
+		if (len != 0) {
+			field.x += dx[dir];
+			field.y += dy[dir];
+		}
+		board[field.y][field.x].type = B_EMPTY;
+		board[field.y][field.x].cls = S_NULL;
+		board[field.y][field.x].playerId = B_EMPTY;
+		board[field.y][field.x].shipId = S_NULL;
+	}
+	return;
+}
+
+void add_ship(board_t** board, dim_t* dim, field_t field, player_t* player, int cls, int dir, int shipId) {
+
+	player->ships[cls][shipId].placed = True;
+	player->ships[cls][shipId].head = field;
+	player->ships[cls][shipId].direction = dir;
+	player->shipPlaced++;
+
+	for (int len = 0; len < cls; len++) {
+		if (len != 0) {
+			field.y += dy[dir];
+			field.x += dx[dir];
+		}
+
+		board[field.y][field.x].playerId = player->id;
+		board[field.y][field.x].cls = cls;
+		board[field.y][field.x].shipId = shipId;
+		board[field.y][field.x].type = B_TAKEN;
+
+		if (len == 0) {
+			board[field.y][field.x].type = B_RADAR;
+		}
+		if (len == 1) {
+			board[field.y][field.x].type = B_CANNON;
+		}
+		if (len + 1 == cls) {
+			board[field.y][field.x].type = B_ENGINE;
+		}
+		if (player->ships[cls][shipId].damaged[len] == True)
+			board[field.y][field.x].type = B_DESTROYED;
+	}
+
+	//add_visible_fields(board, dim, player, cls, shipId);
+
+	return;
+}
+
+void place_ship(char command[], board_t** board, player_t* player, dim_t* dim) {
+	int y;
+	int x;
+	char dirChar;
+	int dir;
+	int id;
+	char classChar[10];
+	int cls; // class of ship
+
+	int argc = sscanf(command, "%*s %d %d %c %d %s", &y, &x, &dirChar, &id, classChar);
+
+	dir = get_dir(dirChar);
+	cls = get_class(classChar);
+
+	field_t field;
+	field.y = y;
+	field.x = x;
+
+	if (argc != 5) {
+		handle_invalid_command(command, C_INVALID);
+	}
+	if (cls == ERROR) {
+		handle_invalid_command(command, C_WRONG_ARGS);
+	}
+	if (!check_coords_inside_player_area(field, dir, cls, player)) {
+		handle_invalid_command(command, C_NOT_IN_STARTING_POSITION);
+	}
+	if (ship_placed(cls, id, player)) {
+		handle_invalid_command(command, C_SHIP_ALREADY_PRESENT);
+	}
+	if (id >= player->fleet[cls]) {
+		handle_invalid_command(command, C_ALL_SHIPS_OF_THE_CLASS_ALREADY_SET);
+	}
+	if (check_if_free_from_reef(board, field, cls, dir) == False) {
+		handle_invalid_command(command, C_PLACING_SHIP_ON_REEF);
+	}
+	if (!check_neighbouring_fields(board, field, dim, cls, dir)) {
+		handle_invalid_command(command, C_PLACING_SHIP_TOO_CLOSE);
+	}
+
+	assert(player->ships[cls][id].created == True);
+	add_ship(board, dim, field, player, cls, dir, id);
+
+	//printf("y: %d x: %d dir: %d id: %d cls: %d\n", y, x, dir, id, cls);
+
+	return;
+}
+
+void set_ship(char command[], board_t** board, player_t** players, dim_t* dim) {
+	// SHIP P y x D i C a1...al
+	char P;
+	int playerId;
+	int y;
+	int x;
+	char dirChar;
+	int dir;
+	int shipId;
+	char clsChar[MAX_SHIP_TYPE_NUMBER];
+	int cls;
+	char statusChar[MAX_SHIP_TYPE_NUMBER];
+	int status[MAX_SHIP_TYPE_NUMBER];
+
+	int argc = sscanf(command, "%*s %c %d %d %c %d %s %s", &P, &y, &x, &dirChar, &shipId, clsChar, statusChar);
+	playerId = get_player_id(P);
+	dir = get_dir(dirChar);
+	cls = get_class(clsChar);
+
+	field_t field;
+	field.y = y;
+	field.x = x;
+
+	if (argc != 7) {
+		handle_invalid_command(command, C_INVALID);
+	}
+	if (cls == ERROR || playerId == ERROR) {
+		handle_invalid_command(command, C_WRONG_ARGS);
+	}
+	if (shipId >= players[playerId]->fleet[cls]) {
+		handle_invalid_command(command, C_ALL_SHIPS_OF_THE_CLASS_ALREADY_SET);
+	}
+	if (check_if_free_from_reef(board, field, cls, dir) == False) {
+		handle_invalid_command(command, C_PLACING_SHIP_ON_REEF);
+	}
+	if (!check_neighbouring_fields(board, field, dim, cls, dir)) {
+		handle_invalid_command(command, C_PLACING_SHIP_TOO_CLOSE);
+	}
+	if (ship_placed(cls, shipId, players[playerId])) {
+		handle_invalid_command(command, C_SHIP_ALREADY_PRESENT);
+	}
+
+	ship_t ship = players[playerId]->ships[cls][shipId];
+
+	for (int i = 0; i < cls; i++)
+		ship.damaged[i] = (statusChar[i] == '0' ? True : False);
+
+	players[playerId]->ships[cls][shipId] = ship;
+
+	add_ship(board, dim, field, players[playerId], cls, dir, shipId);
+
+	return;
 }

@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ai.c" />
     <ClCompile Include="board.c" />
     <ClCompile Include="commands.c" />
     <ClCompile Include="constants.c" />
@@ -149,6 +150,7 @@
     <ClCompile Include="vector.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ai.h" />
     <ClInclude Include="board.h" />
     <ClInclude Include="commands.h" />
     <ClInclude Include="constants.h" />

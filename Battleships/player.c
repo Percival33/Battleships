@@ -71,13 +71,6 @@ int get_remaining_parts(player_t* player) {
 	return size;
 }
 
-int inside(dim_t* dim, field_t* field) {
-	int inRows = (0 <= field->y && field->y < dim->ROWS);
-	int inCols = (0 <= field->x && field->x < dim->COLS);
-
-	return inRows && inCols;
-}
-
 void damage_ship(board_t** board, player_t** players, field_t field) {
 	if (board[field.y][field.x].type == B_EMPTY) {
 		return;
@@ -119,7 +112,7 @@ void shoot_default(char command[], board_t** board, dim_t* dim, player_t** playe
 	if (argc != 2) {
 		handle_invalid_command(command, C_INVALID);
 	}
-	if (!inside(dim, &target)) {
+	if (!check_field_on_board(dim, target)) {
 		//printf("FIELD DOES NOT EXIST\n");
 		handle_invalid_command(command, C_FIELD_DOES_NOT_EXIST);
 	}
@@ -241,7 +234,7 @@ void shoot_extended(char command[], board_t** board, dim_t* dim, player_t** play
 	if (cls == ERROR || shipId >= 10 || players[playerId]->ships[cls][shipId].created == False) {
 		handle_invalid_command(command, C_WRONG_ARGS);
 	}
-	if (!inside(dim, &target)) {
+	if (!check_field_on_board(dim, target)) {
 		handle_invalid_command(command, C_FIELD_DOES_NOT_EXIST);
 	}
 	if (players[PLAYER_A]->shipPlaced + players[PLAYER_B]->shipPlaced !=
@@ -277,5 +270,62 @@ void shoot_extended(char command[], board_t** board, dim_t* dim, player_t** play
 	players[playerId]->ships[cls][shipId] = ship;
 	damage_ship(board, players, target);
 
+	return;
+}
+
+void spy(char command[], board_t** board, dim_t* dim, player_t** players, int playerId) {
+	//SPY i y x
+	int shipId;
+	field_t target;
+	int argc = sscanf(command, "%*s %d %d %d", &shipId, &target.y, &target.x);
+
+	if (argc != 3) {
+		handle_invalid_command(command, C_INVALID);
+	}
+	if (shipId >= 10 || players[playerId]->ships[S_CAR][shipId].created == False) { // ship does not exist
+		handle_invalid_command(command, C_WRONG_ARGS);
+	}
+	if (players[playerId]->ships[S_CAR][shipId].damaged[1] == True) { // cannon destroyed
+		handle_invalid_command(command, C_CANNOT_SEND_PLANE);
+	}
+	if (players[playerId]->ships[S_CAR][shipId].spies == S_CAR) { // all spies sent
+		handle_invalid_command(command, C_ALL_PLANES_SENT);
+	}
+
+	players[playerId]->ships[S_CAR][shipId].spies++;
+
+	for (int dir = -1; dir <= NW; dir++) {
+		field_t newTarget = target;
+
+		if (dir != -1) {
+			newTarget.x += dx[dir];
+			newTarget.y += dy[dir];
+		}
+
+		if (check_field_on_board(dim, newTarget) == False) {
+			continue;
+		}
+
+		int spy = board[newTarget.y][newTarget.x].spy;
+
+		if (spy == B_EMPTY) {
+			spy = playerId;
+		}
+		else if (spy != playerId) {
+			spy = B_VISIBLE_BOTH;
+		}
+		else {
+			assert(spy == playerId);
+		}
+		assert(spy != B_EMPTY);
+
+		board[newTarget.y][newTarget.x].spy = spy;
+	}
+	// sent spy, mark board field as seen by spy, shots++, spies++
+
+	/*
+		1. the ship has not destroyed cannon (CANNOT SEND PLANE),
+		2. the ship is not sending too many planes (ALL PLANES SENT).
+	*/
 	return;
 }

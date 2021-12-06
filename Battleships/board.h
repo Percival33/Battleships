@@ -51,3 +51,17 @@ bool check_neighbouring_fields(board_t** board, field_t field, dim_t* dim, int c
 bool check_if_free_from_reef(board_t** board, field_t field, int cls, int dir);
 
 bool check_field_on_board(dim_t* dim, field_t field);
+
+void set_reef(char command[], board_t** board, dim_t* dim);
+
+dim_t set_dim_size(char command[]);
+
+void set_board_size(char command[], board_t** board, dim_t* dim);
+
+void set_init_position(char command[], struct player_t** players, dim_t* dim);
+
+void remove_from_board(board_t** board, field_t field, int cls, int dir);
+
+void place_ship(char command[], board_t** board, player_t* player, dim_t* dim);
+
+void set_ship(char command[], board_t** board, player_t** players, dim_t* dim);

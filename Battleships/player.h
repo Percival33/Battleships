@@ -53,3 +53,8 @@ void set_fleet(char command[], player_t** player);
 	Function returns number of ships of player.
 */
 int get_fleet_size(player_t* player);
+
+/*
+	Function handles spy command, validates arguments and "discover" fields
+*/
+void spy(char command[], struct board_t** board, struct dim_t* dim, player_t** players, int playerId);
