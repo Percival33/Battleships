@@ -17,7 +17,7 @@ void reallocate(vector_t* v, int new_size) {
 	return;
 }
 
-void push_back(vector_t* v, char command[]) {
+void push_back(vector_t* v, char* command) {
 	if (v->count == v->allocated_size) { // no place for new element
 		reallocate(v, 2 * v->allocated_size);
 	}
@@ -26,4 +26,10 @@ void push_back(vector_t* v, char command[]) {
 	v->ptr[v->count] = text;
 	v->count++;
 	return;
+}
+
+void print_self(vector_t* v) {
+	for (int i = 0; i < v->count; i++) {
+		printf("%s\n", v->ptr[i].text);
+	}
 }

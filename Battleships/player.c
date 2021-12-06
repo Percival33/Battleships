@@ -329,3 +329,14 @@ void spy(char command[], board_t** board, dim_t* dim, player_t** players, int pl
 	*/
 	return;
 }
+
+bool is_ship_placed(int cls, int id, player_t* player) {
+	for (int i = 0; i < 10; i++) {
+		if (player->ships[cls][i].created &&
+			player->ships[cls][i].placed &&
+			i == id) {
+			return True;
+		}
+	}
+	return False;
+}

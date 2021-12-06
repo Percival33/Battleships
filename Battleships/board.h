@@ -42,7 +42,7 @@ void state_board_print(board_t** board, dim_t* dim, int mode, struct player_t** 
 */
 void player_board_print(board_t** board, dim_t* dim, struct player_t** players, int playerId, int mode, int extendedShips);
 
-bool check_ship_fits_inside_board(field_t field, int dir, int cls, struct player_t* player, board_t** board, dim_t* dim);
+bool check_ship_fits_on_board(field_t field, int dir, int cls, struct player_t* player, board_t** board, dim_t* dim);
 
 bool check_around(board_t** board, field_t field, dim_t* dim);
 
@@ -60,8 +60,6 @@ void set_board_size(char command[], board_t** board, dim_t* dim);
 
 void set_init_position(char command[], struct player_t** players, dim_t* dim);
 
-void remove_from_board(board_t** board, field_t field, int cls, int dir);
+bool check_coords_inside_player_area(field_t field, int dir, int cls, struct player_t* player);
 
-void place_ship(char command[], board_t** board, struct player_t* player, dim_t* dim);
-
-void set_ship(char command[], board_t** board, struct player_t** players, dim_t* dim);
+void clear_visited(board_t** board, dim_t* dim);

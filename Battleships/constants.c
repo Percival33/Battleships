@@ -131,3 +131,43 @@ int get_dist(field_t a, field_t b) {
 
 	return deltaX + deltaY;
 }
+
+char reverse_get_dir(int dir) {
+	switch (dir) {
+	case N:
+		return 'N';
+	case S:
+		return 'S';
+	case E:
+		return 'E';
+	case W:
+		return 'W';
+	}
+	return '=';
+}
+
+char* reverse_get_cls(int cls) {
+	switch (cls)
+	{
+	case S_CAR:
+		return "CAR";
+	case S_BAT:
+		return "BAT";
+	case S_CRU:
+		return "CRU";
+	case S_DES:
+		return "DES";
+	}
+	return "WA";
+}
+
+char reverse_get_dir_move(int dir) {
+	if (dir == L)
+		return 'L';
+	else if (dir == F)
+		return 'F';
+	else if (dir == R)
+		return 'R';
+
+	return '-';
+}

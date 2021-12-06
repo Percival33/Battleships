@@ -12,6 +12,7 @@
 #include "player.h"
 #include "commands.h"
 #include "ship.h"
+#include "board_ship_func.h"
 
 bool is_correct_command(char command[], char type[]) {
 	if (strncmp(command, type, strlen(type)) == 0) {
@@ -30,7 +31,8 @@ bool is_state_type_command(char command[]) {
 		is_correct_command(command, SHIP_CHAR)			||
 		is_correct_command(command, "EXTENDED_SHIPS")	||
 		is_correct_command(command, "SRAND")			||
-		is_correct_command(command, "SAVE")) {
+		is_correct_command(command, "SAVE")				||
+		is_correct_command(command, "SET_AI_PLAYER")) {
 		return True;
 	}
 	return False;
@@ -79,7 +81,7 @@ int get_command_type(char command[], int activeCommandType) {
 void handle_invalid_command(char command[], int errorType) { //TODO fix readability
 
 	int len = strlen(command);
-	char* exception = "lolz Nie Dziala";
+	char* exception = "kaput";
 	switch (errorType) {
 	case PLAYER_A:
 		exception = OTHER_PLAYER_EXPECTED_CHAR;
@@ -198,7 +200,7 @@ void handle_player_command(char command[], board_t** board, player_t** players, 
 }
 
 void handle_state_commands(char command[], int *nextPlayer, board_t** board,
-	player_t** players, dim_t* dim, int* extendedShips, vector_t* v, vector_t* reefs, int* seed) {
+	player_t** players, dim_t* dim, int* extendedShips, vector_t* v, vector_t* reefs, int* seed, int* aiPlayer) {
 
 	if (is_correct_command(command, PRINT_CHAR)) {
 		int x;
@@ -248,6 +250,16 @@ void handle_state_commands(char command[], int *nextPlayer, board_t** board,
 		save_geme_state(v, reefs, board, dim, players, nextPlayer, extendedShips, seed);
 	}
 	
+	else if (is_correct_command(command, "SET_AI_PLAYER")) {
+		char P;
+		int argc = sscanf(command, "%*s %c", &P);
+
+		*aiPlayer = get_player_id(P);
+		
+		if (*aiPlayer == ERROR)
+			handle_invalid_command(command, C_WRONG_ARGS);
+	}
+
 	else {
 		handle_invalid_command(command, C_INVALID);
 	}

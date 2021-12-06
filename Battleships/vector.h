@@ -15,6 +15,7 @@ void init(vector_t* v);
 
 void reallocate(vector_t* v, int new_size);
 
-void push_back(vector_t* v, char* command);
+void push_back(vector_t* v, char command[]);
 
-char* pop_back(vector_t* v);
+void print_self(vector_t* v);
+

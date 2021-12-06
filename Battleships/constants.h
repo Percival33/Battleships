@@ -104,6 +104,7 @@ enum Commands {
 	C_SHOOTING_TOO_FAR = 1016,
 	C_CANNOT_SEND_PLANE = 1017,
 	C_ALL_PLANES_SENT = 1018,
+	C_TOO_MANY_RAND = 1019,
 
 
 	C_IN = 104,					// Switching command type 
@@ -169,3 +170,9 @@ int get_move_dir(char dir);
 int get_shooting_range(int cls);
 
 int get_dist(field_t a, field_t b);
+
+char reverse_get_dir(int dir);
+
+char* reverse_get_cls(int cls);
+
+char reverse_get_dir_move(int dir);

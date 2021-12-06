@@ -1,17 +1,18 @@
 #define _CRT_SECURE_NO_WARNINGS
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 #include <time.h>
 
-#include "vector.h"
-#include "save.h"
+#include "ai.h"
 #include "board.h"
 #include "commands.h"
 #include "constants.h"
+#include "save.h"
 #include "ship.h"
 #include "player.h"
+#include "vector.h"
 
 #define debug False
 
@@ -80,7 +81,8 @@ void clear_spies(player_t* player) {
 }
 
 void handle_player_ends_turn(char command[], int commandId, player_t** players, int* activeCommandType,
-	int* currentPlayer, int* nextPlayer, int* shots) {
+	int* currentPlayer, int* nextPlayer, int* shots)
+{
 	
 	if (*activeCommandType == commandId) {
 		check_winner(players);
@@ -99,6 +101,47 @@ void handle_player_ends_turn(char command[], int commandId, player_t** players, 
 	return;
 }
 
+void handle_all_commands(int commandId, int* quit, int* activeCommandType, char command[], 
+	int* nextPlayer, board_t** board, player_t** players, dim_t* dim, int* extendedShips,
+	vector_t* savedCommands, vector_t* reefs, int* seed, int* currentPlayer, int* shots, int* aiPlayer)
+{
+
+	switch (commandId) {
+		case C_QUIT:
+			*quit = 1;
+			break;
+
+		case C_STATE:
+			if (*aiPlayer != ERROR) {
+				run_ai(savedCommands, reefs, board, dim, players, &currentPlayer, extendedShips, &seed, *aiPlayer);
+			}
+			*activeCommandType = C_NULL;
+			break;
+
+		case C_STATE_TYPE:
+			handle_state_commands(command, nextPlayer, board, players, dim, extendedShips, savedCommands, reefs, seed, aiPlayer);
+			break;
+
+		case C_PLAYER_TYPE:
+			handle_player_command(command, board, players, dim, *currentPlayer, shots, *extendedShips);
+			break;
+
+		case PLAYER_A:
+			handle_player_ends_turn(command, commandId, players, activeCommandType, currentPlayer, nextPlayer, shots);
+			break;
+
+		case PLAYER_B:
+			handle_player_ends_turn(command, commandId, players, activeCommandType, currentPlayer, nextPlayer, shots);
+			break;
+
+		case C_INVALID:
+			handle_invalid_command(command, C_INVALID);
+			break;
+	}
+
+	return;
+}
+
 int main() {
 
 	int quit;
@@ -110,6 +153,7 @@ int main() {
 	int extendedShips;
 	int seed; 
 	int shots;
+	int aiPlayer;
 	
 	extendedShips = False;
 	quit = False;
@@ -118,6 +162,7 @@ int main() {
 	nextPlayer = PLAYER_A;
 	seed = DEFAULT_SEED;
 	shots = 0;
+	aiPlayer = ERROR;
 	
 	dim_t* dim = dim_init(DEFAULT_ROWS_NUMBER, DEFAULT_COLS_NUMBER);
 	player_t** players = init_players(dim);
@@ -130,9 +175,6 @@ int main() {
 	set_default_fleet(players);
 
 	char command[MAX_COMMAND_LENGTH];
-
-	//printf("%d\n", sizeof(command));
-	//printf("%d", sizeof(char));
 
 	while (!quit) {
 		if (fgets(command, MAX_COMMAND_LENGTH - 2, stdin) == NULL)
@@ -172,39 +214,13 @@ int main() {
 		}
 		else {
 
-			switch (commandId) {
-				case C_QUIT:
-					quit = 1;
-					break;
-
-				case C_STATE:
-					activeCommandType = C_NULL;
-					break;
-
-				case C_STATE_TYPE:
-					handle_state_commands(command, &nextPlayer, board, players, dim, &extendedShips, &savedCommands, &reefs, &seed);
-					break;
-
-				case C_PLAYER_TYPE:
-					handle_player_command(command, board, players, dim, currentPlayer, &shots, extendedShips);
-					break;
-
-				case PLAYER_A:
-					handle_player_ends_turn(command, commandId, players, &activeCommandType, &currentPlayer, &nextPlayer, &shots);
-					break;
-
-				case PLAYER_B:
-					handle_player_ends_turn(command, commandId, players, &activeCommandType, &currentPlayer, &nextPlayer, &shots);
-					break;
-
-				case C_INVALID:
-					handle_invalid_command(command, C_INVALID);
-					break;
-			}
+			handle_all_commands(commandId, &quit, &activeCommandType, command, &nextPlayer, board,
+				players, dim, &extendedShips, &savedCommands, &reefs, &seed, &currentPlayer, &shots, &aiPlayer);
+			
 		}
 			
 	}
-	//save_all_ships_of_player(&savedCommands, players[PLAYER_A]);
+
 	free_memory(board, dim, players);
 
 	return 0;

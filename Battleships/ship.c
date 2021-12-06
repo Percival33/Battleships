@@ -10,39 +10,6 @@
 #include "player.h"
 #include "commands.h"
 
-bool check_coords_inside_player_area(field_t field, int dir, int cls, player_t* player) { 
-	
-	int inRows;
-	int inCols;
-
-	for (int len = 0; len < cls; len++) {
-		
-		if (len != 0) {
-			field.y += dy[dir];
-			field.x += dx[dir];
-		}
-
-		inRows = (player->rowLow <= field.y && field.y < player->rowHigh);
-		inCols = (player->colLow <= field.x && field.x < player->colHigh);
-
-		if (!inRows || !inCols)
-			return False;
-	
-	}
-	return True;
-} 
-
-bool ship_placed(int cls, int id, player_t* player) {
-	for (int i = 0; i < 10; i++) {
-		if (player->ships[cls][i].created &&
-			player->ships[cls][i].placed &&
-			i == id) {
-			return True;
-		}
-	}
-	return False;
-}
-
 field_t rotate(field_t field, int* dir, int moveDir, int cls) {
 	
 	
@@ -83,7 +50,7 @@ int validate_move(board_t** board, dim_t* dim, ship_t ship, player_t* player,
 		return C_PLACING_SHIP_ON_REEF;
 	}
 
-	if (check_ship_fits_inside_board(currField, currDir, cls, player, board, dim) == False) {
+	if (check_ship_fits_on_board(currField, currDir, cls, player, board, dim) == False) {
 		return C_SHIP_WENT_FROM_BOARD;
 	}
 	if (check_neighbouring_fields(board, currField, dim, cls, currDir) == False) {
@@ -102,24 +69,24 @@ void add_moved_ship(board_t** board, dim_t* dim, player_t* player, ship_t ship,
 
 	player->ships[cls][shipId] = ship;
 
-	add_ship(board, dim, ship.head, player, cls, ship.direction, shipId);
+	add_ship_on_board(board, dim, ship.head, player, cls, ship.direction, shipId);
 	return;
 }
 
-int check_if_free_to_go(board_t** board, player_t* player, dim_t* dim, int cls, int shipId, int moveDir) { 
+int check_if_ship_can_go(board_t** board, player_t* player, dim_t* dim, int cls, int shipId, int moveDir) { 
 	ship_t ship = player->ships[cls][shipId];
 	int is_valid;
 	int currDir = ship.direction;
 	field_t currField = ship.head;
 
-	remove_from_board(board, currField, cls, currDir);
+	remove_ship_from_board(board, currField, cls, currDir);
 	
 	currField = rotate(currField, &currDir, F, cls);
 
 	is_valid = validate_move(board, dim, ship, player, currField, cls, currDir, shipId);\
 
 	if (is_valid != True) {
-		add_ship(board, dim, ship.head, player, cls, ship.direction, shipId);
+		add_ship_on_board(board, dim, ship.head, player, cls, ship.direction, shipId);
 		return is_valid;
 	}
 
@@ -130,10 +97,10 @@ int check_if_free_to_go(board_t** board, player_t* player, dim_t* dim, int cls, 
 
 	currField = rotate(currField, &currDir, moveDir, cls);
 
-	is_valid = validate_move(board, dim, ship, player, currField, cls, currDir, shipId); \
+	is_valid = validate_move(board, dim, ship, player, currField, cls, currDir, shipId);
 
 	if (is_valid != True) {
-		add_ship(board, dim, ship.head, player, cls, ship.direction, shipId);
+		add_ship_on_board(board, dim, ship.head, player, cls, ship.direction, shipId);
 		return is_valid;
 	}
 
@@ -177,7 +144,7 @@ void move(char command[], board_t** board, dim_t* dim, player_t* player, int ext
 		handle_invalid_command(command, C_SHIP_CANNOT_MOVE);
 	}
 
-	int flag = check_if_free_to_go(board, player, dim, cls, shipId, moveDir);
+	int flag = check_if_ship_can_go(board, player, dim, cls, shipId, moveDir);
 
 	if (flag != True) {
 		handle_invalid_command(command, flag);

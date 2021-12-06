@@ -90,35 +90,6 @@ void save_size_of_fleet(vector_t* v, player_t* player) {
 	push_back(v, command);
 }
 
-char reverse_get_dir(int dir) {
-	switch (dir) {
-	case N:
-		return 'N';
-	case S:
-		return 'S';
-	case E:
-		return 'E';
-	case W:
-		return 'W';
-	}
-	return '=';
-}
-
-char* reverse_get_cls(int cls) {
-	switch (cls)
-	{
-	case S_CAR:
-		return "CAR";
-	case S_BAT:
-		return "BAT";
-	case S_CRU:
-		return "CRU";
-	case S_DES:
-		return "DES";
-	}
-	return "WA";
-}
-
 void reverse_get_status(char status[], int damaged[], int cls) {
 	for (int len = 0; len < cls; len++) {
 		status[len] = (damaged[len] == True ? '0' : '1');
@@ -212,8 +183,6 @@ void save_geme_state(vector_t* v, vector_t* reefs, board_t** board, dim_t* dim,
 	
 
 	printf("%s\n", STATE_CHAR);
-	for (int i = 0; i < v->count; i++) {
-		printf("%s\n", v->ptr[i].text);
-	}
+	print_self(v);
 	printf("%s\n", STATE_CHAR);
 }
