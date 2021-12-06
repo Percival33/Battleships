@@ -69,6 +69,8 @@ int get_max_shipId(player_t* player, int cls) {
 			return res + 1;
 		res = shipId;
 	}
+	assert(res == -1);
+	return res + 1;
 }
 
 void save_size_of_fleet(vector_t* v, player_t* player) {
@@ -205,9 +207,9 @@ void save_geme_state(vector_t* v, vector_t* reefs, board_t** board, dim_t* dim,
 	if(*seed != DEFAULT_SEED)
 		save_given_seed(v, seed);
 	
-	//printf("%s\n", STATE_CHAR);
+	printf("%s\n", STATE_CHAR);
 	for (int i = 0; i < v->count; i++) {
 		printf("%s\n", v->ptr[i].text);
 	}
-	//printf("%s\n", STATE_CHAR);
+	printf("%s\n", STATE_CHAR);
 }
