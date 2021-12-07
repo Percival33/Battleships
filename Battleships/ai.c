@@ -136,7 +136,8 @@ void ai_move_one_ship(vector_t* ai, board_t** board, dim_t* dim, player_t* playe
 			foundPlace = True;
 			break;
 		}
-
+		if (rep == MAX_TRIES)
+			return;
 		validate_tries(rep);
 
 		rep++;
@@ -307,7 +308,8 @@ void ai_move_random_ship(vector_t* ai, board_t** board, dim_t* dim, player_t* pl
 			found = True;
 			ai_move_one_ship(ai, board, dim, player, extendedShips, cls, shipId);
 		}
-	
+		if (rep == MAX_TRIES)
+			return;
 		validate_tries(rep);
 		rep++;
 	}
@@ -434,15 +436,13 @@ void copy_data_for_ai(board_t** newBoard, board_t** board, dim_t* dim, player_t*
 	player_t** newPlayer, int* aiPlayer) 
 {
 	copy_board(newBoard, board, dim);
-	assert(newPlayer != NULL);
 
+	assert(newPlayer != NULL);
 	newPlayer[PLAYER_A] = player_init(0, 0, PLAYER_A);
 	newPlayer[PLAYER_B] = player_init(0, 0, PLAYER_B);
 
 	copy_player(newPlayer[PLAYER_A], players[PLAYER_A]);
 	copy_player(newPlayer[PLAYER_B], players[PLAYER_B]);
-
-	//copy_player(newPlayer[*aiPlayer], players[*aiPlayer]);
 
 	newPlayer[*aiPlayer]->isAi = True;
 }
@@ -451,16 +451,16 @@ void run_ai(vector_t* v, vector_t* reefs, board_t** board, dim_t* dim,
 	player_t** players, int* extendedShips, int* seed, int nextPlayer, int* aiPlayer) {
 
 
-	board_t** newBoard = board_init(dim);
-	player_t** newPlayer = (player_t**)malloc(2 * sizeof(player_t*));
+	board_t** newBoard; 
+	player_t** newPlayer;
 	vector_t aiCommands;
 
 	init(&aiCommands);
 
+	newBoard = board_init(dim);
+	newPlayer = (player_t**)malloc(2 * sizeof(player_t*));
+
 	copy_data_for_ai(newBoard, board, dim, players, newPlayer, aiPlayer);
-
-	save_game_state(v, reefs, board, dim, players, nextPlayer, *extendedShips, seed, *aiPlayer);
-
 
 	ai_place_all_ships(&aiCommands, newBoard, dim, newPlayer[*aiPlayer]);
 
@@ -472,12 +472,14 @@ void run_ai(vector_t* v, vector_t* reefs, board_t** board, dim_t* dim,
 			for (int i = 0; i < TRIES; i++) {
 				ai_move_random_ship(&aiCommands, newBoard, dim, newPlayer[*aiPlayer], *extendedShips);
 				enemy = ai_search_enemy(newBoard, dim, newPlayer[*aiPlayer], *extendedShips, *aiPlayer);
-				break;
 			}
 		}
-		while (enemy.x != -1 && enemy.y != -1) {
-			ai_shoot(&aiCommands, newBoard, dim, newPlayer, *aiPlayer, enemy, *extendedShips);		// shoot at enemy
-			enemy = ai_search_enemy(newBoard, dim, newPlayer[*aiPlayer], *extendedShips, *aiPlayer);
+		if (enemy.x != -1 && enemy.y != -1) {
+			for (int i = 0; i < TRIES; i++) {
+				ai_move_random_ship(&aiCommands, newBoard, dim, newPlayer[*aiPlayer], *extendedShips);
+				enemy = ai_search_enemy(newBoard, dim, newPlayer[*aiPlayer], *extendedShips, *aiPlayer);
+				break;
+			}
 		}
 	}
 	else { // shoot default -> infinite range -> always able to shoot

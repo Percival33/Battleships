@@ -172,10 +172,10 @@ void handle_player_command(char command[], board_t** board, player_t** players, 
 			return;
 		}
 	
-		assert(*shots == 0);
 		if (*shots == 1) {
-			handle_invalid_command(command, C_INVALID);
+			handle_invalid_command(command, C_TOO_MANY_SHOOTS);
 		}
+		assert(*shots == 0);
 		shoot_default(command, board, dim, players, playerId);
 		*shots += 1;
 	}

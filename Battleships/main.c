@@ -102,8 +102,9 @@ void handle_player_ends_turn(char command[], int commandId, player_t** players, 
 	return;
 }
 
-void handle_all_commands(int commandId, int* quit, int* activeCommandType, char command[], int* nextPlayer, board_t** board,
-	player_t** players, dim_t* dim, int* extendedShips, vector_t* savedCommands, vector_t* reefs, int* seed, int* currentPlayer, int* shots, int* aiPlayer, int* aiMoved)
+void handle_all_commands(int commandId, int* quit, int* activeCommandType, char command[], int* nextPlayer,
+	board_t** board, player_t** players, dim_t* dim, int* extendedShips, vector_t* savedCommands, vector_t* reefs,
+	int* seed, int* currentPlayer, int* shots, int* aiPlayer, int* aiMoved)
 {
 
 	switch (commandId) {
@@ -115,6 +116,9 @@ void handle_all_commands(int commandId, int* quit, int* activeCommandType, char 
 			if (*aiPlayer != ERROR && *aiMoved == False) {
 				*aiMoved = True;
 				srand(*seed);
+
+				save_game_state(savedCommands, reefs, board, dim, players, nextPlayer, *extendedShips, seed, *aiPlayer);
+				
 				run_ai(savedCommands, reefs, board, dim, players, extendedShips, seed, nextPlayer, aiPlayer);
 			}
 			*activeCommandType = C_NULL;
@@ -129,10 +133,16 @@ void handle_all_commands(int commandId, int* quit, int* activeCommandType, char 
 			break;
 
 		case PLAYER_A:
+			if (*aiPlayer == PLAYER_B) {
+				run_ai(savedCommands, reefs, board, dim, players, extendedShips, seed, nextPlayer, aiPlayer);
+			}
 			handle_player_ends_turn(command, commandId, players, activeCommandType, currentPlayer, nextPlayer, shots);
 			break;
 
 		case PLAYER_B:
+			if (*aiPlayer == PLAYER_A) {
+				run_ai(savedCommands, reefs, board, dim, players, extendedShips, seed, nextPlayer, aiPlayer);
+			}
 			handle_player_ends_turn(command, commandId, players, activeCommandType, currentPlayer, nextPlayer, shots);
 			break;
 

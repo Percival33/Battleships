@@ -47,6 +47,10 @@ field_t rotate(field_t field, int* dir, int moveDir, int cls) {
 int validate_move(board_t** board, dim_t* dim, ship_t ship, player_t* player, 
 	field_t currField, int cls, int currDir, int shipId) {
 
+	if (check_field_on_board(dim, currField) == False) {
+		return False;
+	}
+
 	if (check_if_free_from_reef(board, currField, cls, currDir) == False) { // after moving forward 1 square
 		return C_PLACING_SHIP_ON_REEF;
 	}
@@ -80,7 +84,7 @@ int check_if_ship_can_go(board_t** board, player_t* player, dim_t* dim, int cls,
 	int currDir = ship.direction;
 	field_t currField = ship.head;
 
-	remove_ship_from_board(board, currField, cls, currDir);
+	remove_ship_from_board(board, currField, player, cls, currDir);
 	
 	currField = rotate(currField, &currDir, F, cls);
 

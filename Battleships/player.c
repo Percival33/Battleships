@@ -72,28 +72,29 @@ int get_remaining_parts(player_t* player) {
 	return size;
 }
 
-void damage_ship(board_t** board, player_t** players, field_t field) {
-	if (board[field.y][field.x].type == B_EMPTY) {
+void damage_ship(board_t** board, player_t** players, field_t target) {
+	if (board[target.y][target.x].type == B_EMPTY) {
 		return;
 	}
 
-	board[field.y][field.x].type = B_DESTROYED;
-	int playerId = board[field.y][field.x].playerId;
-	int cls = board[field.y][field.x].cls;
-	int shipId = board[field.y][field.x].shipId;
+	board[target.y][target.x].type = B_DESTROYED;
+	int playerId = board[target.y][target.x].playerId;
+	int cls = board[target.y][target.x].cls;
+	int shipId = board[target.y][target.x].shipId;
 
 	assert(cls != S_NULL);
 
 	ship_t currShip = players[playerId]->ships[cls][shipId];
-	field_t head = currShip.head;
+	field_t field = currShip.head;
 	for (int len = 0; len < cls; len++) {
 		if (len != 0) {
-			head.y += dy[currShip.direction];
-			head.x += dx[currShip.direction];
+			field.y += dy[currShip.direction];
+			field.x += dx[currShip.direction];
 		}
 
-		if (head.y == field.y && head.x == field.x) {
+		if (field.y == target.y && field.x == target.x) {
 			currShip.damaged[len] = True;
+			break;
 		}
 	}
 
@@ -138,18 +139,18 @@ void create_fleet(int fleetSize[], player_t* player) {
 	}
 
 	for (int cls = S_DES; cls <= S_CAR; cls++) {
-		for (int j = 0; j < MAX_SHIPS_NUMBER; j++) {
-			player->ships[cls][j].created = False;
-			player->ships[cls][j].placed = False;
+		for (int shipId = 0; shipId < MAX_SHIPS_NUMBER; shipId++) {
+			player->ships[cls][shipId].created = False;
+			player->ships[cls][shipId].placed = False;
 		}
 	}
 
 	for (int cls = S_DES; cls <= S_CAR; cls++) {
-		for (int j = 0; j < fleetSize[cls]; j++) {
-			player->ships[cls][j].created = True;
-			player->ships[cls][j].placed = False;
-			for (int k = 0; k < cls; k++) {
-				player->ships[cls][j].damaged[k] = 0;
+		for (int shipId = 0; shipId < fleetSize[cls]; shipId++) {
+			player->ships[cls][shipId].created = True;
+			player->ships[cls][shipId].placed = False;
+			for (int len = 0; len < cls; len++) {
+				player->ships[cls][shipId].damaged[len] = 0;
 			}
 		}
 	}

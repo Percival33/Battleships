@@ -7,7 +7,10 @@
 #include "board.h"
 #include "board_ship_func.h"
 
-void remove_ship_from_board(board_t** board, field_t field, int cls, int dir) {
+void remove_ship_from_board(board_t** board, field_t field, player_t* player, int cls, int dir) {
+
+	player->shipPlaced--;
+
 	for (int len = 0; len < cls; len++) {
 		if (len != 0) {
 			field.x += dx[dir];
