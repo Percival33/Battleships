@@ -93,7 +93,7 @@ void place_ship(char command[], board_t** board, player_t* player, dim_t* dim) {
 	if (id >= player->fleet[cls]) {
 		handle_invalid_command(command, C_ALL_SHIPS_OF_THE_CLASS_ALREADY_SET);
 	}
-	if (check_if_free_from_reef(board, field, cls, dir) == False) {
+	if (check_if_free_from_reef(board, dim, field, cls, dir) == False) {
 		handle_invalid_command(command, C_PLACING_SHIP_ON_REEF);
 	}
 	if (!check_neighbouring_fields(board, field, dim, cls, dir)) {
@@ -140,7 +140,7 @@ void set_ship(char command[], board_t** board, player_t** players, dim_t* dim) {
 	if (shipId >= players[playerId]->fleet[cls]) {
 		handle_invalid_command(command, C_ALL_SHIPS_OF_THE_CLASS_ALREADY_SET);
 	}
-	if (check_if_free_from_reef(board, field, cls, dir) == False) {
+	if (check_if_free_from_reef(board, dim, field, cls, dir) == False) {
 		handle_invalid_command(command, C_PLACING_SHIP_ON_REEF);
 	}
 	if (!check_neighbouring_fields(board, field, dim, cls, dir)) {

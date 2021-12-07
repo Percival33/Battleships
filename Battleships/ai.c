@@ -30,7 +30,7 @@ bool validate_place_ship(board_t** board, dim_t* dim, player_t* player, field_t 
 	if (check_coords_inside_player_area(head, dir, cls, player) == False) {
 		return False;
 	}
-	if (check_if_free_from_reef(board, head, cls, dir) == False) {
+	if (check_if_free_from_reef(board, dim, head, cls, dir) == False) {
 		return False;
 	}
 	if (check_neighbouring_fields(board, head, dim, cls, dir) == False) {

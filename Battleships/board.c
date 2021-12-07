@@ -97,13 +97,15 @@ bool check_neighbouring_fields(board_t** board, field_t field, dim_t* dim, int c
 	return True;
 }
 
-bool check_if_free_from_reef(board_t** board, field_t field, int cls, int dir) {
+bool check_if_free_from_reef(board_t** board, dim_t* dim, field_t field, int cls, int dir) {
 	for (int len = 0; len < cls; len++) {
 
 		if (len != 0) {
 			field.y += dy[dir];
 			field.x += dx[dir];
 		}
+		if (check_field_on_board(dim, field) == False)
+			return False;
 
 		if (board[field.y][field.x].type == B_REEF)
 			return False;

@@ -47,17 +47,14 @@ field_t rotate(field_t field, int* dir, int moveDir, int cls) {
 int validate_move(board_t** board, dim_t* dim, ship_t ship, player_t* player, 
 	field_t currField, int cls, int currDir, int shipId) {
 
-	if (check_field_on_board(dim, currField) == False) {
-		return False;
-	}
-
-	if (check_if_free_from_reef(board, currField, cls, currDir) == False) { // after moving forward 1 square
-		return C_PLACING_SHIP_ON_REEF;
-	}
-
 	if (check_ship_fits_on_board(currField, currDir, cls, player, board, dim) == False) {
 		return C_SHIP_WENT_FROM_BOARD;
 	}
+
+	if (check_if_free_from_reef(board, dim, currField, cls, currDir) == False) { // after moving forward 1 square
+		return C_PLACING_SHIP_ON_REEF;
+	}
+
 	if (check_neighbouring_fields(board, currField, dim, cls, currDir) == False) {
 		return C_PLACING_SHIP_TOO_CLOSE;
 	}

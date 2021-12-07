@@ -48,7 +48,7 @@ bool check_around(board_t** board, field_t field, dim_t* dim);
 
 bool check_neighbouring_fields(board_t** board, field_t field, dim_t* dim, int cls, int dir);
 
-bool check_if_free_from_reef(board_t** board, field_t field, int cls, int dir);
+bool check_if_free_from_reef(board_t** board, dim_t* dim, field_t field, int cls, int dir);
 
 bool check_field_on_board(dim_t* dim, field_t field);
 
