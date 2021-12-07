@@ -162,11 +162,11 @@ enum Player {
 
 int get_dir(char dirChar);
 
-int get_class(char cat[]);
+int get_class(char catChar[]);
 
 int get_player_id(char P);
 
-int get_move_dir(char dir);
+int get_move_dir(char dirChar);
 
 int get_shooting_range(int cls);
 

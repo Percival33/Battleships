@@ -83,75 +83,64 @@ void handle_invalid_command(char command[], int errorType) { //TODO fix readabil
 	int len = strlen(command);
 	char* exception = "kaput";
 	switch (errorType) {
-	case PLAYER_A:
-		exception = OTHER_PLAYER_EXPECTED_CHAR;
-		break;
-	case PLAYER_B:
-		exception = OTHER_PLAYER_EXPECTED_CHAR;
-		break;
-
-	case C_INVALID:
-		exception = WRONG_COMMAND_CHAR;
-		break;
-
-	case C_NOT_ALL_SHIPS_PLACED:
-		exception = SHIP_NOT_ALL_SHIPS_PLACED_CHAR;
-		break;
-
-	case C_WRONG_ARGS:
-		exception = "WRONG ARGUMENTS";
-		break;
-
-	case C_FIELD_DOES_NOT_EXIST:
-		exception = FIELD_DOES_NOT_EXIST_CHAR;
-		break;
-
-	case C_NOT_IN_STARTING_POSITION:
-		exception = NOT_IN_STARTING_POSITION_CHAR;
-		break;
-
-	case C_SHIP_ALREADY_PRESENT:
-		exception = SHIP_ALREADY_PRESENT_CHAR;
-		break;
-
-	case C_ALL_SHIPS_OF_THE_CLASS_ALREADY_SET:
-		exception = ALL_SHIPS_OF_THE_CLASS_ALREADY_SET_CHAR;
-		break;
-
-	case C_REEF_NOT_ON_BOARD:
-		exception = REEF_IS_NOT_PLACED_ON_BOARD_CHAR;
-		break;
-
-	case C_PLACING_SHIP_TOO_CLOSE:
-		exception = PLACING_SHIP_TOO_CLOSE_TO_OTHER_SHIP_CHAR;
-		break;
-
-	case C_PLACING_SHIP_ON_REEF:
-		exception = PLACING_SHIP_ON_REEF_CHAR;
-		break;
-
-	case C_SHIP_MOVED_ALREADY:
-		exception = SHIP_MOVED_ALREADY_CHAR;
-		break;
-
-	case C_SHIP_WENT_FROM_BOARD:
-		exception = SHIP_WENT_FROM_BOARD_CHAR;
-		break;
-	case C_SHIP_CANNOT_SHOOT:
-		exception = SHIP_CANNOT_SHOOT_CHAR;
-		break;
-	case C_TOO_MANY_SHOOTS:
-		exception = TOO_MANY_SHOOTS_CHAR;
-		break;
-	case C_SHOOTING_TOO_FAR:
-		exception = SHOOTING_TOO_FAR_CHAR;
-		break;
-	case C_CANNOT_SEND_PLANE:
-		exception = CANNOT_SEND_PLANE_CHAR;
-		break;
+		case PLAYER_A:
+			exception = OTHER_PLAYER_EXPECTED_CHAR;
+			break;
+		case PLAYER_B:
+			exception = OTHER_PLAYER_EXPECTED_CHAR;
+			break;
+		case C_INVALID:
+			exception = WRONG_COMMAND_CHAR;
+			break;
+		case C_NOT_ALL_SHIPS_PLACED:
+			exception = SHIP_NOT_ALL_SHIPS_PLACED_CHAR;
+			break;
+		case C_WRONG_ARGS:
+			exception = "WRONG ARGUMENTS";
+			break;
+		case C_FIELD_DOES_NOT_EXIST:
+			exception = FIELD_DOES_NOT_EXIST_CHAR;
+			break;
+		case C_NOT_IN_STARTING_POSITION:
+			exception = NOT_IN_STARTING_POSITION_CHAR;
+			break;
+		case C_SHIP_ALREADY_PRESENT:
+			exception = SHIP_ALREADY_PRESENT_CHAR;
+			break;
+		case C_ALL_SHIPS_OF_THE_CLASS_ALREADY_SET:
+			exception = ALL_SHIPS_OF_THE_CLASS_ALREADY_SET_CHAR;
+			break;
+		case C_REEF_NOT_ON_BOARD:
+			exception = REEF_IS_NOT_PLACED_ON_BOARD_CHAR;
+			break;
+		case C_PLACING_SHIP_TOO_CLOSE:
+			exception = PLACING_SHIP_TOO_CLOSE_TO_OTHER_SHIP_CHAR;
+			break;
+		case C_PLACING_SHIP_ON_REEF:
+			exception = PLACING_SHIP_ON_REEF_CHAR;
+			break;
+		case C_SHIP_MOVED_ALREADY:
+			exception = SHIP_MOVED_ALREADY_CHAR;
+			break;
+		case C_SHIP_WENT_FROM_BOARD:
+			exception = SHIP_WENT_FROM_BOARD_CHAR;
+			break;
+		case C_SHIP_CANNOT_SHOOT:
+			exception = SHIP_CANNOT_SHOOT_CHAR;
+			break;
+		case C_TOO_MANY_SHOOTS:
+			exception = TOO_MANY_SHOOTS_CHAR;
+			break;
+		case C_SHOOTING_TOO_FAR:
+			exception = SHOOTING_TOO_FAR_CHAR;
+			break;
+		case C_CANNOT_SEND_PLANE:
+			exception = CANNOT_SEND_PLANE_CHAR;
+			break;
 	}
+
 	if (STOS) {
-		printf("INVALID OPERATION \"%.*s \": %s\n", len - 1, command, exception);		// (-.-)
+		printf("INVALID OPERATION \"%.*s \": %s\n", len - 1, command, exception);	
 	}
 	else {
 		printf("INVALID OPERATION \"%.*s\": %s\n", len - 1, command, exception);
@@ -161,20 +150,19 @@ void handle_invalid_command(char command[], int errorType) { //TODO fix readabil
 }
 
 void handle_player_command(char command[], board_t** board, player_t** players, dim_t* dim, int playerId, int* shots, int extendedShips) {
-	
 	if (is_correct_command(command, PLACE_SHIP_CHAR)) {
 		place_ship(command, board, players[playerId], dim);
 	}
 	else if (is_correct_command(command, SHOOT_CHAR)) {
-	
 		if (extendedShips) {
 			shoot_extended(command, board, dim, players, playerId);
 			return;
 		}
-	
+
 		if (*shots == 1) {
 			handle_invalid_command(command, C_TOO_MANY_SHOOTS);
 		}
+
 		assert(*shots == 0);
 		shoot_default(command, board, dim, players, playerId);
 		*shots += 1;
@@ -199,66 +187,74 @@ void handle_player_command(char command[], board_t** board, player_t** players, 
 	return;
 }
 
+void set_ai_player(char command[], int *aiPlayer) {
+	char P;
+	int argc = sscanf(command, "%*s %c", &P);
+
+	*aiPlayer = get_player_id(P);
+
+	if (argc != 1 || *aiPlayer == ERROR)
+		handle_invalid_command(command, C_WRONG_ARGS);
+
+	return;
+}
+
+void set_seed(char command[], int* seed) {
+	assert(sizeof(seed) == sizeof(int*));
+	int argc = sscanf(command, "%*s %d", seed);
+	if (argc != 1)
+		handle_invalid_command(command, C_INVALID);
+	assert(sizeof(*seed) == sizeof(int));
+
+	return;
+}
+
+void state_print(char command[], board_t** board, dim_t* dim, player_t** players) {
+	int x;
+	int argc = sscanf(command, "%*s %d", &x);
+	assert(argc == 1);
+	assert(x == 0 || x == 1);
+	state_board_print(board, dim, x, players);
+
+	return;
+}
+
 void handle_state_commands(char command[], int *nextPlayer, board_t** board,
 	player_t** players, dim_t* dim, int* extendedShips, vector_t* v, vector_t* reefs, int* seed, int* aiPlayer) {
-
 	if (is_correct_command(command, PRINT_CHAR)) {
-		int x;
-		int argc = sscanf(command, "%*s %d", &x);
-		assert(argc == 1); 
-		assert(x == 0 || x == 1);
-		state_board_print(board, dim, x, players);
+		state_print(command, board, dim, players);
 	}
-
 	else if (is_correct_command(command, SET_FLEET_CHAR)) {
 		set_fleet(command, players);
 	}
-	
 	else if (is_correct_command(command, NEXT_PLAYER_CHAR)) {
 		*nextPlayer = set_next_player(command);
 	}
-	
 	else if (is_correct_command(command, BOARD_SIZE_CHAR)) {
 		set_board_size(command, board, dim);
 	}
-	
 	else if (is_correct_command(command, INIT_POSITION_CHAR)) {
 		set_init_position(command, players, dim);
 	}
-	
 	else if (is_correct_command(command, REEF_CHAR)) {
 		set_reef(command, board, dim);
 		push_back(reefs, command);
 	}
-	
 	else if (is_correct_command(command, SHIP_CHAR)) {
 		set_ship(command, board, players, dim);
 	}
-	
 	else if (is_correct_command(command, "EXTENDED_SHIPS")) {
 		*extendedShips = True;
 	}
-
 	else if (is_correct_command(command, "SRAND")) {
-		assert(sizeof(seed) == sizeof(int*));
-		int argc = sscanf(command, "%*s %d", seed);
-		assert(sizeof(*seed) == sizeof(int));
+		set_seed(command, seed);
 	}
-
 	else if (is_correct_command(command, "SAVE")) {
 		save_game_state(v, reefs, board, dim, players, nextPlayer, *extendedShips, seed, DEFAULT_AI);
 	}
-	
 	else if (is_correct_command(command, "SET_AI_PLAYER")) {
-		char P;
-		int argc = sscanf(command, "%*s %c", &P);
-
-		*aiPlayer = get_player_id(P);
-		
-		if (*aiPlayer == ERROR)
-			handle_invalid_command(command, C_WRONG_ARGS);
+		set_ai_player(command, aiPlayer);
 	}
-
 	else {
 		handle_invalid_command(command, C_INVALID);
 	}

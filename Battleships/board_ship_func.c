@@ -8,7 +8,6 @@
 #include "board_ship_func.h"
 
 void remove_ship_from_board(board_t** board, field_t field, player_t* player, int cls, int dir) {
-
 	player->shipPlaced--;
 
 	for (int len = 0; len < cls; len++) {
@@ -55,29 +54,12 @@ void add_ship_on_board(board_t** board, dim_t* dim, field_t field, player_t* pla
 			board[field.y][field.x].type = B_DESTROYED;
 	}
 
-	//add_visible_fields(board, dim, player, cls, shipId);
-
 	return;
 }
 
-void place_ship(char command[], board_t** board, player_t* player, dim_t* dim) {
-	int y;
-	int x;
-	char dirChar;
-	int dir;
-	int id;
-	char classChar[10];
-	int cls; // class of ship
-
-	int argc = sscanf(command, "%*s %d %d %c %d %s", &y, &x, &dirChar, &id, classChar);
-
-	dir = get_dir(dirChar);
-	cls = get_class(classChar);
-
-	field_t field;
-	field.y = y;
-	field.x = x;
-
+bool validate_place_ship_command(char command[], board_t** board, dim_t* dim, field_t field, 
+	player_t* player, int argc, int cls, int dir, int shipId)
+{
 	if (argc != 5) {
 		handle_invalid_command(command, C_INVALID);
 	}
@@ -87,10 +69,10 @@ void place_ship(char command[], board_t** board, player_t* player, dim_t* dim) {
 	if (!check_coords_inside_player_area(field, dir, cls, player)) {
 		handle_invalid_command(command, C_NOT_IN_STARTING_POSITION);
 	}
-	if (is_ship_placed(cls, id, player)) {
+	if (is_ship_placed(cls, shipId, player)) {
 		handle_invalid_command(command, C_SHIP_ALREADY_PRESENT);
 	}
-	if (id >= player->fleet[cls]) {
+	if (shipId >= player->fleet[cls]) {
 		handle_invalid_command(command, C_ALL_SHIPS_OF_THE_CLASS_ALREADY_SET);
 	}
 	if (check_if_free_from_reef(board, dim, field, cls, dir) == False) {
@@ -100,12 +82,57 @@ void place_ship(char command[], board_t** board, player_t* player, dim_t* dim) {
 		handle_invalid_command(command, C_PLACING_SHIP_TOO_CLOSE);
 	}
 
-	assert(player->ships[cls][id].created == True);
-	add_ship_on_board(board, dim, field, player, cls, dir, id);
+	return True;
+}
 
-	//printf("y: %d x: %d dir: %d id: %d cls: %d\n", y, x, dir, id, cls);
+void place_ship(char command[], board_t** board, player_t* player, dim_t* dim) {
+	int y;
+	int x;
+	char dirChar;
+	int dir;
+	int shipId;
+	char classChar[10];
+	int cls; // class of ship
+
+	int argc = sscanf(command, "%*s %d %d %c %d %s", &y, &x, &dirChar, &shipId, classChar);
+
+	dir = get_dir(dirChar);
+	cls = get_class(classChar);
+
+	field_t field;
+	field.y = y;
+	field.x = x;
+
+	validate_place_ship_command(command, board, dim, field, player, argc, cls, dir, shipId);
+
+	assert(player->ships[cls][shipId].created == True);
+	add_ship_on_board(board, dim, field, player, cls, dir, shipId);
 
 	return;
+}
+
+bool validate_set_ship(char command[], board_t** board, dim_t* dim, field_t field,
+	player_t** players, int playerId, int argc, int cls, int dir, int shipId) {
+	if (argc != 7) {
+		handle_invalid_command(command, C_INVALID);
+	}
+	if (cls == ERROR || playerId == ERROR) {
+		handle_invalid_command(command, C_WRONG_ARGS);
+	}
+	if (shipId >= players[playerId]->fleet[cls]) {
+		handle_invalid_command(command, C_ALL_SHIPS_OF_THE_CLASS_ALREADY_SET);
+	}
+	if (check_if_free_from_reef(board, dim, field, cls, dir) == False) {
+		handle_invalid_command(command, C_PLACING_SHIP_ON_REEF);
+	}
+	if (!check_neighbouring_fields(board, field, dim, cls, dir)) {
+		handle_invalid_command(command, C_PLACING_SHIP_TOO_CLOSE);
+	}
+	if (is_ship_placed(cls, shipId, players[playerId])) {
+		handle_invalid_command(command, C_SHIP_ALREADY_PRESENT);
+	}
+
+	return True;
 }
 
 void set_ship(char command[], board_t** board, player_t** players, dim_t* dim) {
@@ -131,24 +158,7 @@ void set_ship(char command[], board_t** board, player_t** players, dim_t* dim) {
 	field.y = y;
 	field.x = x;
 
-	if (argc != 7) {
-		handle_invalid_command(command, C_INVALID);
-	}
-	if (cls == ERROR || playerId == ERROR) {
-		handle_invalid_command(command, C_WRONG_ARGS);
-	}
-	if (shipId >= players[playerId]->fleet[cls]) {
-		handle_invalid_command(command, C_ALL_SHIPS_OF_THE_CLASS_ALREADY_SET);
-	}
-	if (check_if_free_from_reef(board, dim, field, cls, dir) == False) {
-		handle_invalid_command(command, C_PLACING_SHIP_ON_REEF);
-	}
-	if (!check_neighbouring_fields(board, field, dim, cls, dir)) {
-		handle_invalid_command(command, C_PLACING_SHIP_TOO_CLOSE);
-	}
-	if (is_ship_placed(cls, shipId, players[playerId])) {
-		handle_invalid_command(command, C_SHIP_ALREADY_PRESENT);
-	}
+	validate_set_ship(command, board, dim, field, players, playerId, argc, cls, dir, shipId);
 
 	ship_t ship = players[playerId]->ships[cls][shipId];
 

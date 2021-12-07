@@ -69,15 +69,14 @@ bool check_ship_fits_on_board(field_t field, int dir, int cls, player_t* player,
 
 bool check_around(board_t** board, field_t field, dim_t* dim) {
 	for (int dir = 0; dir < 4; dir++) {
-		int newX = field.x + dx[dir];
-		int newY = field.y + dy[dir];
+		field_t newField = field;
+		newField.x += dx[dir];
+		newField.y += dy[dir];
 
-		if (newX >= dim->COLS || newY >= dim->ROWS || newX < 0 || newY < 0) // field does not exist
+		if (check_field_on_board(dim, newField) == False) // field does not exist
 			continue;
 
-		int fieldType = board[newY][newX].type;
-
-		if (B_TAKEN <= fieldType && fieldType < B_DESTROYED) { // check if fieldType is occupied by ship
+		if (field_occupied_by_ship(board, newField) == True) { // check if fieldType is occupied by ship
 			return False;
 		}
 	}
@@ -137,18 +136,12 @@ char basic_char_field(board_t** board, int row, int col) {
 		board[row][col].type == B_ENGINE ||
 		board[row][col].type == B_CANNON ||
 		board[row][col].type == B_RADAR) {
-		//printf("+");
 		return '+';
 	}
 	else if (board[row][col].type == B_DESTROYED) {
-		//printf("x");
 		return 'x';
 	}
-	else {
-		//printf(" ");
-		return ' ';
-	}
-	return '=';
+	return ' ';
 }
 
 void basic_print(board_t** board, dim_t* dim, player_t* player, int mode) {
@@ -166,7 +159,7 @@ void basic_print(board_t** board, dim_t* dim, player_t* player, int mode) {
 				int spy = board[row][col].spy;
 				int playerId = player->id;
 
-				if (spy == playerId || spy == B_VISIBLE_BOTH || 
+				if (spy == playerId		|| spy == B_VISIBLE_BOTH	|| 
 					visible == playerId || visible == B_VISIBLE_BOTH) { // field is visible by spy or radar
 					printf("%c", basic_char_field(board, row, col));
 				}
@@ -177,7 +170,6 @@ void basic_print(board_t** board, dim_t* dim, player_t* player, int mode) {
 			else {
 				printf("%c", basic_char_field(board, row, col));
 			}
-			//printf("{%d,%d} = %d ", i, j, board[i][j].type);
 		}
 		printf("\n");
 	}
@@ -198,6 +190,7 @@ void extended_print_num_cols_rows(int COLS) {
 		}
 		printf("\n");
 	}
+
 	else {
 		printf("  ");
 		for (int num = 0; num < COLS; num++) {
@@ -205,25 +198,28 @@ void extended_print_num_cols_rows(int COLS) {
 		}
 		printf("\n");
 	}
+	
 	return;
 }
 
 char extended_char_field(board_t** board, int row, int col) {
 	switch (board[row][col].type) {
-	case B_EMPTY:
-		return ' ';
-	case B_TAKEN:
-		return '+';
-	case B_ENGINE:
-		return '%';
-	case B_CANNON:
-		return '!';
-	case B_RADAR:
-		return '@';
-	case B_DESTROYED:
-		return 'x';
-	case B_REEF:
-		return '#';
+		case B_EMPTY:
+			return ' ';
+		case B_TAKEN:
+			return '+';
+		case B_ENGINE:
+			return '%';
+		case B_CANNON:
+			return '!';
+		case B_RADAR:
+			return '@';
+		case B_DESTROYED:
+			return 'x';
+		case B_REEF:
+			return '#';
+		default:
+			return '=';
 	}
 	return '=';
 }
@@ -233,8 +229,6 @@ void extended_print(board_t** board, dim_t* dim, player_t* player, int mode) {
 	const int COL_HIGH = dim->COLS;
 	const int ROW_LOW = 0;
 	const int ROW_HIGH = dim->ROWS;
-
-	
 
 	for (int row = ROW_LOW; row < ROW_HIGH; row++) {
 		if (row == ROW_LOW) {
@@ -298,14 +292,12 @@ void set_visible(board_t** board, dim_t* dim, field_t target, field_t origin, in
 
 	int visible = board[target.y][target.x].visible;
 
-	// if ship continue ?
-
 	if (visible == B_EMPTY) { // default value -> seen for the first time
 		visible = playerId;
 	}
 	else if (visible != playerId) {
 		assert(visible != B_EMPTY);
-		assert(visible == playerId ^ 1);
+		assert(visible == (playerId ^ 1));
 		visible = B_VISIBLE_BOTH;
 	}
 
@@ -481,15 +473,10 @@ void set_init_position(char command[], player_t** players, dim_t* dim) {
 	players[playerId]->colLow = xL;
 	players[playerId]->colHigh = xR + 1;
 
-
 	return;
 }
 
 bool check_coords_inside_player_area(field_t field, int dir, int cls, player_t* player) {
-
-	int inRows;
-	int inCols;
-
 	for (int len = 0; len < cls; len++) {
 
 		if (len != 0) {
@@ -497,8 +484,8 @@ bool check_coords_inside_player_area(field_t field, int dir, int cls, player_t* 
 			field.x += dx[dir];
 		}
 
-		inRows = (player->rowLow <= field.y && field.y < player->rowHigh);
-		inCols = (player->colLow <= field.x && field.x < player->colHigh);
+		int inRows = (player->rowLow <= field.y && field.y < player->rowHigh);
+		int inCols = (player->colLow <= field.x && field.x < player->colHigh);
 
 		if (!inRows || !inCols)
 			return False;
@@ -507,4 +494,9 @@ bool check_coords_inside_player_area(field_t field, int dir, int cls, player_t* 
 	return True;
 }
 
+bool field_occupied_by_ship(board_t** board, field_t target) {
+	if (board[target.y][target.x].type >= B_TAKEN && board[target.y][target.x].type <= B_RADAR)
+		return True;
+	return False;
+}
 

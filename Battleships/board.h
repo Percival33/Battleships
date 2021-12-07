@@ -63,3 +63,5 @@ void set_init_position(char command[], struct player_t** players, dim_t* dim);
 bool check_coords_inside_player_area(field_t field, int dir, int cls, struct player_t* player);
 
 void clear_visited(board_t** board, dim_t* dim);
+
+bool field_occupied_by_ship(board_t** board, field_t target);

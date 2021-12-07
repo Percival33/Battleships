@@ -40,13 +40,6 @@ const char ALL_PLANES_SENT_CHAR[] = "ALL PLANES SENT";
 const int dx[] = { 0, -1, 0, 1, -1, -1, 1, 1};  
 const int dy[] = { 1, 0, -1, 0, 1, -1, -1, 1};
 
-/*
-const int MAX_SHIPS_NUMBER = 10;
-const int MAX_SHIP_LENGTH = 5;
-const int MAX_SHIP_TYPE_NUMBER = 6;
-*/
-
-
 int get_dir(char dirChar) {
 	int dir;
 	switch ((int)dirChar)
@@ -103,14 +96,14 @@ int get_player_id(char P) {
 	return ERROR;
 }
 
-int get_move_dir(char dir) {
-	if (dir == 'F') {
+int get_move_dir(char dirChar) {
+	if (dirChar == 'F') {
 		return F;
 	}
-	if (dir == 'L') {
+	if (dirChar == 'L') {
 		return L;
 	}
-	if (dir == 'R') {
+	if (dirChar == 'R') {
 		return R;
 	}
 	return ERROR;

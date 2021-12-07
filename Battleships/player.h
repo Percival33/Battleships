@@ -47,7 +47,7 @@ int set_next_player(char command[]);
 	Function sets fleet size for specific player.
 	It also validates command
 */
-void set_fleet(char command[], player_t** player);
+void set_fleet(char command[], player_t** players);
 
 
 /*
@@ -62,4 +62,15 @@ void spy(char command[], struct board_t** board, struct dim_t* dim, player_t** p
 
 bool is_ship_placed(int cls, int id, player_t* player);
 
+void set_default_fleet(player_t** players);
+
+player_t** init_players(struct dim_t* dim);
+
+void check_winner(player_t** players);
+
+void clear_moved(player_t* player);
+
+void clear_shots(player_t* player);
+
+void clear_spies(player_t* player);
 

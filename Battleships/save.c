@@ -11,16 +11,6 @@
 #include "ship.h"
 #include "player.h"
 
-/*
-	The order of saving should be
-	
-	[x] extended_ships,
-
-	autoshooting, if A.I. was set. 
-
-	[x] Also, please save the seed of random number generator, but increased by 1, if given.
-*/
-
 void save_board_size(vector_t* v, dim_t* dim) {
 
 	char command[MAX_COMMAND_LENGTH];
@@ -122,8 +112,7 @@ void save_all_ships_of_player(vector_t* v, player_t* player) {
 		
 		for (int shipId = 0; shipId < player->fleet[cls]; shipId++) {
 			if (player->ships[cls][shipId].placed == True) {
-				strcpy(command, save_ship_command(player, cls, shipId));
-				push_back(v, command);
+				push_back(v, strcpy(command, save_ship_command(player, cls, shipId)));
 			}
 		}
 	}

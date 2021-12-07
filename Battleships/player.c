@@ -9,6 +9,64 @@
 #include "player.h"
 #include "board.h"
 
+void set_default_fleet(player_t** players) {
+	set_fleet("SET_FLEET A 1 2 3 4", players);
+	set_fleet("SET_FLEET B 1 2 3 4", players);
+	return;
+}
+
+player_t** init_players(dim_t* dim) {
+	player_t** players = (player_t**)malloc(2 * sizeof(player_t*));
+	assert(players != NULL);
+
+	players[PLAYER_A] = player_init(0, (dim->ROWS / 2), PLAYER_A);
+	players[PLAYER_B] = player_init((dim->ROWS / 2) + 1, dim->ROWS, PLAYER_B);
+
+	return players;
+}
+void check_winner(player_t** players) {
+	if (players[PLAYER_A]->shipPlaced + players[PLAYER_B]->shipPlaced !=
+		get_fleet_size(players[PLAYER_A]) + get_fleet_size(players[PLAYER_B]))
+		return;
+	int AReamaining = get_remaining_parts(players[PLAYER_A]);
+	int BReamaining = get_remaining_parts(players[PLAYER_B]);
+
+	if (AReamaining == 0) {
+		printf("B won\n");
+		exit(0);
+	}
+	if (BReamaining == 0) {
+		printf("A won\n");
+		exit(0);
+	}
+	return;
+}
+
+void clear_moved(player_t* player) {
+	for (int cls = S_DES; cls <= S_CAR; cls++) {
+		for (int shipId = 0; shipId < MAX_SHIPS_NUMBER; shipId++) {
+			player->ships[cls][shipId].moved = 0;
+		}
+	}
+	return;
+}
+
+void clear_shots(player_t* player) {
+	for (int cls = S_DES; cls <= S_CAR; cls++) {
+		for (int shipId = 0; shipId < MAX_SHIPS_NUMBER; shipId++) {
+			player->ships[cls][shipId].shots = 0;
+		}
+	}
+	return;
+}
+
+void clear_spies(player_t* player) {
+	for (int shipId = 0; shipId < MAX_SHIPS_NUMBER; shipId++) {
+		player->ships[S_CAR][shipId].spies = 0;
+	}
+	return;
+}
+
 player_t* player_init(int rowLow, int rowHigh, int id) {
 	player_t* player = (player_t*)malloc(sizeof(player_t));
 
