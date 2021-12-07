@@ -114,7 +114,6 @@ void handle_all_commands(int commandId, int* quit, int* activeCommandType, char 
 
 		case C_STATE:
 			if (*aiPlayer != ERROR && *aiMoved == False) {
-				*extendedShips = True;
 				*aiMoved = True;
 				srand(*seed);
 				run_ai(savedCommands, reefs, board, dim, players, extendedShips, seed, nextPlayer, aiPlayer);

@@ -7,6 +7,7 @@
 #include "constants.h"
 #include "ship.h"
 #include "board.h"
+#include "board_ship_func.h"
 #include "player.h"
 #include "commands.h"
 
@@ -45,10 +46,6 @@ field_t rotate(field_t field, int* dir, int moveDir, int cls) {
 
 int validate_move(board_t** board, dim_t* dim, ship_t ship, player_t* player, 
 	field_t currField, int cls, int currDir, int shipId) {
-
-	if (check_field_on_board(dim, currField) == False) {
-		return C_FIELD_DOES_NOT_EXIST;
-	}
 
 	if (check_if_free_from_reef(board, currField, cls, currDir) == False) { // after moving forward 1 square
 		return C_PLACING_SHIP_ON_REEF;
@@ -153,6 +150,8 @@ void move(char command[], board_t** board, dim_t* dim, player_t* player, int ext
 	if (flag != True) {
 		handle_invalid_command(command, flag);
 	}
+
+	return;
 	
 	/*
 		1. the ship has not destroyed engine(SHIP CANNOT MOVE),

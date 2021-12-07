@@ -63,8 +63,6 @@ void ai_place_one_ship(vector_t* ai, board_t** board, dim_t* dim, player_t* play
 			head.x = rand_range(player->colLow, player->colHigh - 1);
 			head.y = rand_range(player->rowLow, player->rowHigh -1);
 			
-			printf("%d %d %d\n", head.x, head.y, dir);
-
 			if (validate_place_ship(board, dim, player, head, dir, cls) == True) {
 				foundPlace = True;
 				break;
@@ -205,48 +203,28 @@ field_t extended_ai_search_enemy_from_ship(board_t** board, dim_t* dim, field_t 
 	return empty;
 }
 
-
-bool basic_validate_searching_enemy(board_t** board, dim_t* dim, field_t target, 
-	field_t cannon, int cls) {
-	if (check_field_on_board(dim, target) == False)
-		return False;
-	if (board[target.y][target.x].visited == True)
-		return False;
-	if (get_dist(target, cannon) > get_shooting_range(cls))
-		return False;
-}
-
 bool seen_by_spy(board_t** board, field_t target, int playerId) {
 	return (board[target.y][target.x].spy == B_VISIBLE_BOTH ||
 		board[target.y][target.x].spy == playerId);
 }
 
-field_t basic_ai_search_enemy_from_ship(board_t** board, dim_t* dim, field_t target, field_t cannon, int cls, int aiPlayer) {
+field_t basic_ai_search_enemy(board_t** board, dim_t* dim, int aiPlayer) {
 	field_t empty;
 	empty.y = -1;
 	empty.x = -1;
 
-	if (basic_validate_searching_enemy(board, dim, target, cannon, cls) == False) {
-		return empty;
-	}
+	int ROWS = dim->ROWS;
+	int COLS = dim->COLS;
 
-	board[target.y][target.x].visited = True;
-
-	if (seen_by_spy(board, target, aiPlayer) && board[target.y][target.x].type != B_DESTROYED &&
-		board[target.y][target.x].shipId == aiPlayer ^ 1) { // different player
-		return target;
-	}
-
-	for (int dir = N; dir <= NW; dir++) {
-		field_t newTarget = target;
-		newTarget.y += dy[dir];
-		newTarget.x += dx[dir];
-
-		field_t enemy = basic_ai_search_enemy_from_ship(board, dim, newTarget, cannon,
-			cls, aiPlayer);
-
-		if (enemy.y != -1 && enemy.x != -1) // enemy found within range
-			return enemy;
+	for (int row = 0; row < ROWS; row++) {
+		for (int col = 0; col < COLS; col++) {
+			if (board[row][col].shipId != aiPlayer && 
+				board[row][col].type >= B_TAKEN && board[row][col].type <= B_RADAR) { // field occupied by enemy's ship
+				empty.x = col;
+				empty.y = row;
+				return empty;
+			}
+		}
 	}
 
 	return empty;
@@ -287,39 +265,32 @@ field_t ai_search_enemy(board_t** board, dim_t* dim, player_t* player, int exten
 	enemy.y = -1;
 
 	int radarRange;
-
-	for (int cls = S_DES; cls <= S_CAR; cls++) {
-		for (int shipId = 0; shipId < player->fleet[cls]; shipId++) {
-			clear_visited(board, dim);
+	if(extendedShips) {
+		for (int cls = S_DES; cls <= S_CAR; cls++) {
+			for (int shipId = 0; shipId < player->fleet[cls]; shipId++) {
+				clear_visited(board, dim);
 			
-			set_ship_fields(player->ships[cls][shipId], &radar, &cannon);
+				set_ship_fields(player->ships[cls][shipId], &radar, &cannon);
 
-			//if (extendedShips) {
+				//if (extendedShips) {
 				
-				if (validate_shooting_abilities(player, cls, shipId, &radarRange) == False)
-					continue;
-				if (radarRange == 1) // can shoot at field seen by spy plane
-					enemy = basic_ai_search_enemy_from_ship(board, dim, cannon, cannon, cls, aiPlayer);
-				else
-					enemy = extended_ai_search_enemy_from_ship(board, dim, radar, radar, cannon,
-						cls, radarRange, aiPlayer, extendedShips);
+					if (validate_shooting_abilities(player, cls, shipId, &radarRange) == False)
+						continue;
+					if (radarRange == 1) // can shoot at field seen by spy plane
+						enemy = basic_ai_search_enemy(board, dim, aiPlayer);
+					else
+						enemy = extended_ai_search_enemy_from_ship(board, dim, radar, radar, cannon,
+							cls, radarRange, aiPlayer, extendedShips);
 
-				if (enemy.x != -1 && enemy.y != -1) // enemy found
-					return enemy;
-			//}
-			//else {
-
-			//	enemy = basic_ai_search_enemy_from_ship(board, dim, cannon, cannon, cls, aiPlayer);
-
-			//	if (enemy.x != -1 && enemy.y != -1) // enemy found
-			//		return enemy;
-
-			//}
-			// if cannon is not destroyed
-			// radarRange squared
-			//ai_search_enemy_from_ship()
+					if (enemy.x != -1 && enemy.y != -1) // enemy found
+						return enemy;
+			}
 		}
 	}
+	else {
+		return basic_ai_search_enemy(board, dim, aiPlayer);
+	}
+
 	assert(enemy.x == -1 && enemy.y == -1);
 	return enemy; // no enemy found
 }
@@ -343,7 +314,7 @@ void ai_move_random_ship(vector_t* ai, board_t** board, dim_t* dim, player_t* pl
 	return;
 }
 
-void ai_shoot_from_ship(vector_t* v, board_t** board, dim_t* dim, player_t** players,
+void extended_ai_shoot_from_ship(vector_t* v, board_t** board, dim_t* dim, player_t** players,
 	int aiPlayer, field_t target, int shipId, int cls)
 {
 	char command[MAX_COMMAND_LENGTH];
@@ -357,26 +328,43 @@ void ai_shoot_from_ship(vector_t* v, board_t** board, dim_t* dim, player_t** pla
 	push_back(v, command);
 }
 
-void ai_shoot(vector_t* v, board_t** board, dim_t* dim, player_t** players, int aiPlayer, field_t target, int extendedShips) {
-	player_t* AI = players[aiPlayer];
+void basic_ai_shoot(vector_t* v, board_t** board, dim_t* dim, player_t** players, field_t target, int aiPlayer) {
+	char command[MAX_COMMAND_LENGTH];
+	
+	sprintf(command, "%s %d %d", SHOOT_CHAR, target.y, target.x);
 
+	shoot_default(command, board, dim, players, aiPlayer);
+
+	push_back(v, command);
+	return;
+}
+
+void extended_ai_shoot(vector_t* v, board_t** board, dim_t* dim, player_t** players, int aiPlayer, field_t target, int extendedShips) {
+	
+	player_t* AI = players[aiPlayer];
+	
 	for (int cls = S_DES; cls <= S_CAR; cls++) {
 		for (int shipId = 0; shipId < AI->fleet[cls]; shipId++) {
-			//if can shoot, save command, rand move ship?
 			field_t cannon = AI->ships[cls][shipId].head;
 			cannon.x += dx[AI->ships[cls][shipId].direction];
 			cannon.y += dy[AI->ships[cls][shipId].direction];
-			
-			if (get_dist(target, cannon) <= get_shooting_range(cls)			&&
-				players[aiPlayer]->ships[cls][shipId].damaged[1] == False	&&
-				players[aiPlayer]->ships[cls][shipId].shots < cls
-				) { // cannon not broken
-				ai_shoot_from_ship(v, board, dim, players, aiPlayer, target, shipId, cls);
+
+			int temp = ERROR;
+
+			if (get_dist(target, cannon) <= get_shooting_range(cls) &&
+				validate_shooting_abilities(AI, cls, shipId, &temp) == True) {
+				if (extendedShips)
+					extended_ai_shoot_from_ship(v, board, dim, players, aiPlayer, target, shipId, cls);
+				else
+					basic_ai_shoot(v, board, dim, players, target, aiPlayer);
 				return;
 			}
 		}
 	}
-	//assert(0 == -1); 
+}
+
+void ai_shoot(vector_t* v, board_t** board, dim_t* dim, player_t** players, int aiPlayer, field_t target, int extendedShips) {
+	extended_ai_shoot(v, board, dim, players, aiPlayer, target, extendedShips);
 	return;
 }
 
@@ -422,14 +410,30 @@ void copy_board(board_t** dst, board_t** src, dim_t* dim) {
 	return;
 }
 
-void run_ai(vector_t* v, vector_t* reefs, board_t** board, dim_t* dim,
-	player_t** players, int* extendedShips, int* seed, int nextPlayer, int* aiPlayer) {
+void print_ai(vector_t* aiCommands, int* aiPlayer) {
+	printf("\n%s\n%s\n%s\n", STATE_CHAR, "PRINT 0", STATE_CHAR);
 
+	if (*aiPlayer == PLAYER_A)
+		printf("\n%s\n", PLAYER_A_CHAR);
+	else
+		printf("\n%s\n", PLAYER_B_CHAR);
 
-	board_t** newBoard = board_init(dim);
+	print_self(aiCommands);
+
+	if (*aiPlayer == PLAYER_A)
+		printf("%s\n", PLAYER_A_CHAR);
+	else
+		printf("%s\n", PLAYER_B_CHAR);
+
+	printf("\n%s\n%s\n%s\n", STATE_CHAR, "PRINT 0", STATE_CHAR);
+
+	return;
+}
+
+void copy_data_for_ai(board_t** newBoard, board_t** board, dim_t* dim, player_t** players,
+	player_t** newPlayer, int* aiPlayer) 
+{
 	copy_board(newBoard, board, dim);
-	player_t** newPlayer = (player_t**)malloc(2 * sizeof(player_t*));
-
 	assert(newPlayer != NULL);
 
 	newPlayer[PLAYER_A] = player_init(0, 0, PLAYER_A);
@@ -441,43 +445,49 @@ void run_ai(vector_t* v, vector_t* reefs, board_t** board, dim_t* dim,
 	//copy_player(newPlayer[*aiPlayer], players[*aiPlayer]);
 
 	newPlayer[*aiPlayer]->isAi = True;
+}
 
-	save_game_state(v, reefs, board, dim, players, nextPlayer, *extendedShips, seed, *aiPlayer);
+void run_ai(vector_t* v, vector_t* reefs, board_t** board, dim_t* dim,
+	player_t** players, int* extendedShips, int* seed, int nextPlayer, int* aiPlayer) {
 
-	printf("%s\n%s\n%s\n", STATE_CHAR, "PRINT 0", STATE_CHAR);
 
-	int cls;
-	int shipId;
-	//int shots = 0;
+	board_t** newBoard = board_init(dim);
+	player_t** newPlayer = (player_t**)malloc(2 * sizeof(player_t*));
 	vector_t aiCommands;
 
 	init(&aiCommands);
+
+	copy_data_for_ai(newBoard, board, dim, players, newPlayer, aiPlayer);
+
+	save_game_state(v, reefs, board, dim, players, nextPlayer, *extendedShips, seed, *aiPlayer);
 
 
 	ai_place_all_ships(&aiCommands, newBoard, dim, newPlayer[*aiPlayer]);
 
 	field_t enemy = ai_search_enemy(newBoard, dim, newPlayer[*aiPlayer], *extendedShips, *aiPlayer);
 
-	if (enemy.x == -1 && enemy.y == -1) {
+	if (*extendedShips) {
+		if (enemy.x == -1 && enemy.y == -1) {
 
-		for (int i = 0; i < TRIES; i++) {
-			// if can shoot, else break
-			ai_move_random_ship(&aiCommands, newBoard, dim, newPlayer[*aiPlayer], *extendedShips);
+			for (int i = 0; i < TRIES; i++) {
+				ai_move_random_ship(&aiCommands, newBoard, dim, newPlayer[*aiPlayer], *extendedShips);
+				enemy = ai_search_enemy(newBoard, dim, newPlayer[*aiPlayer], *extendedShips, *aiPlayer);
+				break;
+			}
+		}
+		while (enemy.x != -1 && enemy.y != -1) {
+			ai_shoot(&aiCommands, newBoard, dim, newPlayer, *aiPlayer, enemy, *extendedShips);		// shoot at enemy
 			enemy = ai_search_enemy(newBoard, dim, newPlayer[*aiPlayer], *extendedShips, *aiPlayer);
-			break;
 		}
 	}
-	while (enemy.x != -1 && enemy.y != -1) {
-		ai_shoot(&aiCommands, newBoard, dim, newPlayer, *aiPlayer, enemy, *extendedShips);		// shoot at enemy
-		enemy = ai_search_enemy(newBoard, dim, newPlayer[*aiPlayer], *extendedShips, *aiPlayer);
+	else { // shoot default -> infinite range -> always able to shoot
+		ai_shoot(&aiCommands, newBoard, dim, newPlayer, *aiPlayer, enemy, *extendedShips);
 	}
 
 	
 	ai_move_random_ship(&aiCommands, newBoard, dim, newPlayer[*aiPlayer], *extendedShips);
 	
-	print_self(&aiCommands);
-
-	printf("%s\n%s\n%s\n", STATE_CHAR, "PRINT 0", STATE_CHAR);
+	print_ai(&aiCommands, aiPlayer);
 
 	return;
 }
