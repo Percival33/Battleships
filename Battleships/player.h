@@ -3,6 +3,7 @@
 #include "constants.h"
 
 typedef struct player {
+	int isAi;
 	int id;
 	int rowLow; 
 	int rowHigh;

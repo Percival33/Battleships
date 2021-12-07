@@ -14,6 +14,7 @@ player_t* player_init(int rowLow, int rowHigh, int id) {
 
 	assert(player != NULL);
 
+	player->isAi = ERROR;
 	player->id = id;
 	player->rowLow = rowLow;
 	player->rowHigh = rowHigh;
@@ -146,6 +147,7 @@ void create_fleet(int fleetSize[], player_t* player) {
 	for (int cls = S_DES; cls <= S_CAR; cls++) {
 		for (int j = 0; j < fleetSize[cls]; j++) {
 			player->ships[cls][j].created = True;
+			player->ships[cls][j].placed = False;
 			for (int k = 0; k < cls; k++) {
 				player->ships[cls][j].damaged[k] = 0;
 			}
@@ -331,9 +333,9 @@ void spy(char command[], board_t** board, dim_t* dim, player_t** players, int pl
 }
 
 bool is_ship_placed(int cls, int id, player_t* player) {
-	for (int i = 0; i < 10; i++) {
-		if (player->ships[cls][i].created &&
-			player->ships[cls][i].placed &&
+	for (int i = 0; i < MAX_SHIPS_NUMBER; i++) {
+		if (player->ships[cls][i].created == True &&
+			player->ships[cls][i].placed == True &&
 			i == id) {
 			return True;
 		}

@@ -243,11 +243,10 @@ void handle_state_commands(char command[], int *nextPlayer, board_t** board,
 		assert(sizeof(seed) == sizeof(int*));
 		int argc = sscanf(command, "%*s %d", seed);
 		assert(sizeof(*seed) == sizeof(int));
-		srand(*seed);
 	}
 
 	else if (is_correct_command(command, "SAVE")) {
-		save_geme_state(v, reefs, board, dim, players, nextPlayer, extendedShips, seed);
+		save_game_state(v, reefs, board, dim, players, nextPlayer, *extendedShips, seed, DEFAULT_AI);
 	}
 	
 	else if (is_correct_command(command, "SET_AI_PLAYER")) {

@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClCompile Include="ai.c" />
     <ClCompile Include="board.c" />
+    <ClCompile Include="board_ship_func.c" />
     <ClCompile Include="commands.c" />
     <ClCompile Include="constants.c" />
     <ClCompile Include="main.c" />
@@ -152,6 +153,7 @@
   <ItemGroup>
     <ClInclude Include="ai.h" />
     <ClInclude Include="board.h" />
+    <ClInclude Include="board_ship_func.h" />
     <ClInclude Include="commands.h" />
     <ClInclude Include="constants.h" />
     <ClInclude Include="save.h" />

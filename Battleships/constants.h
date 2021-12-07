@@ -156,6 +156,7 @@ enum Board {
 enum Player {
 	PLAYER_A = 0,
 	PLAYER_B = 1,
+	DEFAULT_AI = 333,
 };
 
 

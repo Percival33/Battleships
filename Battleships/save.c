@@ -120,9 +120,11 @@ void save_all_ships_of_player(vector_t* v, player_t* player) {
 
 	for (int cls = S_CAR; cls >= S_DES; cls--) {
 		
-		for (int shipId = 0; shipId < get_max_shipId(player, cls); shipId++) {
-			strcpy(command, save_ship_command(player, cls, shipId));
-			push_back(v, command);
+		for (int shipId = 0; shipId < player->fleet[cls]; shipId++) {
+			if (player->ships[cls][shipId].placed == True) {
+				strcpy(command, save_ship_command(player, cls, shipId));
+				push_back(v, command);
+			}
 		}
 	}
 
@@ -157,8 +159,8 @@ void save_given_seed(vector_t* v, int* seed) {
 	return;
 }
 
-void save_geme_state(vector_t* v, vector_t* reefs, board_t** board, dim_t* dim,
-	player_t** players, int* nextPlayer, int extendedShips, int* seed) {
+void save_game_state(vector_t* v, vector_t* reefs, board_t** board, dim_t* dim,
+	player_t** players, int* nextPlayer, int extendedShips, int* seed, int aiPlayer) {
 
 	free(v->ptr);
 	init(v);
@@ -173,6 +175,7 @@ void save_geme_state(vector_t* v, vector_t* reefs, board_t** board, dim_t* dim,
 	save_init_position(v, players[PLAYER_B]);
 	save_size_of_fleet(v, players[PLAYER_B]);
 	save_all_ships_of_player(v, players[PLAYER_B]);
+
 
 	save_reefs(v, reefs);
 	save_extended_ships(v, extendedShips);

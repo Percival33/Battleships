@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
+#include <time.h>
 
 #include "vector.h"
 #include "save.h"
@@ -11,7 +13,8 @@
 #include "commands.h"
 #include "board_ship_func.h"
 
-#define MAX_TRIES 10*1000
+#define MAX_TRIES 1000*1000
+#define TRIES 30
 
 int rand_range(int a, int b) {
 	if (a > b)
@@ -30,7 +33,7 @@ bool validate_place_ship(board_t** board, dim_t* dim, player_t* player, field_t 
 	if (check_if_free_from_reef(board, head, cls, dir) == False) {
 		return False;
 	}
-	if (!check_neighbouring_fields(board, head, dim, cls, dir)) {
+	if (check_neighbouring_fields(board, head, dim, cls, dir) == False) {
 		return False;
 	}
 
@@ -39,7 +42,7 @@ bool validate_place_ship(board_t** board, dim_t* dim, player_t* player, field_t 
 
 void validate_tries(int rep) {
 	if (rep == MAX_TRIES) {
-		handle_invalid_command("rand goes brr", C_TOO_MANY_RAND);
+		handle_invalid_command("rand goes brrr", C_TOO_MANY_RAND);
 	}
 	return;
 }
@@ -47,18 +50,26 @@ void validate_tries(int rep) {
 void ai_place_one_ship(vector_t* ai, board_t** board, dim_t* dim, player_t* player, int cls, int shipId) {
 	field_t head;
 	int dir;
-	int foundPlace = 0;
+	bool foundPlace = False;
 	int rep = 0;
 
-	while (!foundPlace) {
-		head.x = rand_range(player->colLow, player->colHigh);
-		head.y = rand_range(player->rowLow, player->rowHigh);
+	while (foundPlace == False) {
+		
 
 		dir = rand_range(N, W);
 
-		if (validate_place_ship(board, dim, player, head, dir, cls) == True) {
-			foundPlace = True;
-			break;
+		for (int i = 0; i < TRIES; i++) {
+
+			head.x = rand_range(player->colLow, player->colHigh - 1);
+			head.y = rand_range(player->rowLow, player->rowHigh -1);
+			
+			printf("%d %d %d\n", head.x, head.y, dir);
+
+			if (validate_place_ship(board, dim, player, head, dir, cls) == True) {
+				foundPlace = True;
+				break;
+			}		
+		
 		}
 
 		validate_tries(rep);
@@ -73,7 +84,10 @@ void ai_place_one_ship(vector_t* ai, board_t** board, dim_t* dim, player_t* play
 	clsChar = reverse_get_cls(cls);
 	dirChar = reverse_get_dir(dir);
 
-	int temp = sprintf(command, "%s %d %d %c %d %s", PLACE_SHIP_CHAR, head.y, head.x, dirChar, shipId, clsChar);
+	int temp = sprintf(command, "%s %d %d %c %d %s ", PLACE_SHIP_CHAR, head.y, head.x, dirChar, shipId, clsChar);
+
+	assert(player->isAi == True);
+	place_ship(command, board, player, dim);
 
 	push_back(ai, command);
 
@@ -83,7 +97,8 @@ void ai_place_one_ship(vector_t* ai, board_t** board, dim_t* dim, player_t* play
 void ai_place_all_ships(vector_t* ai, board_t** board, dim_t* dim, player_t* player) {
 	for (int cls = S_CAR; cls >= S_DES; cls--) {
 		for (int shipId = 0; shipId < player->fleet[cls]; shipId++) {
-			ai_place_one_ship(ai, board, dim, player, cls, shipId);
+			if(player->ships[cls][shipId].placed == False)
+				ai_place_one_ship(ai, board, dim, player, cls, shipId);
 		}
 	}
 }
@@ -113,9 +128,9 @@ void ai_move_one_ship(vector_t* ai, board_t** board, dim_t* dim, player_t* playe
 	//int shipId;
 	int moveDir;
 	int rep = 0;
-	int foundPlace = 0;
+	bool foundPlace = False;
 
-	while (!foundPlace) {
+	while (foundPlace == False) {
 		
 		moveDir = rand_range(L, R);							// [L, F, R]
 
@@ -170,7 +185,8 @@ field_t extended_ai_search_enemy_from_ship(board_t** board, dim_t* dim, field_t 
 
 	board[target.y][target.x].visited = True;
 
-	if (board[target.y][target.x].type != B_DESTROYED && board[target.y][target.x].shipId == aiPlayer ^ 1) { // different player
+	if (board[target.y][target.x].type != B_DESTROYED && board[target.y][target.x].playerId != aiPlayer &&
+		board[target.y][target.x].type >= B_TAKEN && board[target.y][target.x].type <= B_RADAR) { // different player
 		return target;
 	}
 
@@ -250,6 +266,9 @@ bool validate_shooting_abilities(player_t* player, int cls, int shipId, int* rad
 	if (player->ships[cls][shipId].damaged[1] == True)	// cannon is damaged
 		return False;
 
+	if (player->ships[cls][shipId].shots == cls)		// cannot shoot more
+		return False;
+
 	*radarRange = cls * cls;							// radar range = cls, but squared 
 	
 	if (player->ships[cls][shipId].damaged[0] == True)	// radar is broken
@@ -275,7 +294,7 @@ field_t ai_search_enemy(board_t** board, dim_t* dim, player_t* player, int exten
 			
 			set_ship_fields(player->ships[cls][shipId], &radar, &cannon);
 
-			if (extendedShips) {
+			//if (extendedShips) {
 				
 				if (validate_shooting_abilities(player, cls, shipId, &radarRange) == False)
 					continue;
@@ -287,15 +306,15 @@ field_t ai_search_enemy(board_t** board, dim_t* dim, player_t* player, int exten
 
 				if (enemy.x != -1 && enemy.y != -1) // enemy found
 					return enemy;
-			}
-			else {
+			//}
+			//else {
 
-				enemy = basic_ai_search_enemy_from_ship(board, dim, cannon, cannon, cls, aiPlayer);
+			//	enemy = basic_ai_search_enemy_from_ship(board, dim, cannon, cannon, cls, aiPlayer);
 
-				if (enemy.x != -1 && enemy.y != -1) // enemy found
-					return enemy;
+			//	if (enemy.x != -1 && enemy.y != -1) // enemy found
+			//		return enemy;
 
-			}
+			//}
 			// if cannon is not destroyed
 			// radarRange squared
 			//ai_search_enemy_from_ship()
@@ -306,79 +325,159 @@ field_t ai_search_enemy(board_t** board, dim_t* dim, player_t* player, int exten
 }
 
 void ai_move_random_ship(vector_t* ai, board_t** board, dim_t* dim, player_t* player, int extendedShips) {
-	int cls = rand_range(S_DES, S_CAR);
-	int shipId = rand_range(0, player->fleet[cls] - 1);		//shipId from 0 to fleet[cls] - 1
-	ai_move_one_ship(ai, board, dim, player, extendedShips, cls, shipId);
+	bool found = False;
+	int rep = 0;
+
+	while (found == False) {
+		int cls = rand_range(S_DES, S_CAR);
+		
+		if (player->fleet[cls] != 0) {
+			int shipId = rand_range(0, player->fleet[cls] - 1);		//shipId from 0 to fleet[cls] - 1
+			found = True;
+			ai_move_one_ship(ai, board, dim, player, extendedShips, cls, shipId);
+		}
+	
+		validate_tries(rep);
+		rep++;
+	}
+	return;
 }
 
-void ai_shoot_from_ship(vector_t* v, field_t target, int shipId, int cls) {
+void ai_shoot_from_ship(vector_t* v, board_t** board, dim_t* dim, player_t** players,
+	int aiPlayer, field_t target, int shipId, int cls)
+{
 	char command[MAX_COMMAND_LENGTH];
 
 	char* clsChar = reverse_get_cls(cls);
 
 	int temp = sprintf(command, "%s %d %s %d %d", SHOOT_CHAR, shipId, clsChar, target.y, target.x);
 
+	shoot_extended(command, board, dim, players, aiPlayer); // shot on newBoard, to make sure, same field is not shot twice
+
 	push_back(v, command);
 }
 
-void ai_shoot(vector_t* v, board_t** board, dim_t* dim, player_t* player, field_t target, int extendedShips) {
+void ai_shoot(vector_t* v, board_t** board, dim_t* dim, player_t** players, int aiPlayer, field_t target, int extendedShips) {
+	player_t* AI = players[aiPlayer];
+
 	for (int cls = S_DES; cls <= S_CAR; cls++) {
-		for (int shipId = 0; shipId < player->fleet[cls]; shipId++) {
+		for (int shipId = 0; shipId < AI->fleet[cls]; shipId++) {
 			//if can shoot, save command, rand move ship?
-			field_t cannon = player->ships[cls][shipId].head;
-			cannon.x += dx[player->ships[cls][shipId].direction];
-			cannon.y += dy[player->ships[cls][shipId].direction];
+			field_t cannon = AI->ships[cls][shipId].head;
+			cannon.x += dx[AI->ships[cls][shipId].direction];
+			cannon.y += dy[AI->ships[cls][shipId].direction];
 			
-			if (get_dist(target, cannon) <= get_shooting_range(cls)) {
-				ai_shoot_from_ship(v, target, shipId, cls);
-
-				int r = rand_range(0, 100);
-
-				if(r%15 == 0)
-					ai_move_one_ship(v, board, dim, place_ship, extendedShips, cls, shipId);
-
+			if (get_dist(target, cannon) <= get_shooting_range(cls)			&&
+				players[aiPlayer]->ships[cls][shipId].damaged[1] == False	&&
+				players[aiPlayer]->ships[cls][shipId].shots < cls
+				) { // cannon not broken
+				ai_shoot_from_ship(v, board, dim, players, aiPlayer, target, shipId, cls);
 				return;
 			}
 		}
 	}
-	assert(0 == -1); 
+	//assert(0 == -1); 
+	return;
+}
+
+void copy_player(player_t* dst, player_t* src) {
+	dst->colHigh = src->colHigh;
+	dst->colLow = src->colLow;
+	dst->id = src->id;
+	dst->isAi = src->isAi;
+	dst->rowHigh = src->rowHigh;
+	dst->rowLow = src->rowLow;
+	dst->shipPlaced = src->shipPlaced;
+
+	for (int cls = S_DES; cls <= S_CAR; cls++) {
+		dst->fleet[cls] = src->fleet[cls];
+
+		for (int shipId = 0; shipId < MAX_SHIPS_NUMBER; shipId++) {
+			dst->ships[cls][shipId] = src->ships[cls][shipId];
+		}
+	}
+	return;
+}
+
+
+void copy_board(board_t** dst, board_t** src, dim_t* dim) {
+	const int COL_LOW = 0;
+	const int COL_HIGH = dim->COLS;
+	const int ROW_LOW = 0;
+	const int ROW_HIGH = dim->ROWS;
+
+
+	for (int row = ROW_LOW; row < ROW_HIGH; row++) {
+		for (int col = COL_LOW; col < COL_HIGH; col++) {
+			dst[row][col].type		=	src[row][col].type;
+			dst[row][col].visible	=	src[row][col].visible;
+			dst[row][col].visited	=	src[row][col].visited;
+			dst[row][col].spy		=	src[row][col].spy;
+			dst[row][col].playerId	=	src[row][col].playerId;
+			dst[row][col].cls		=	src[row][col].cls;
+			dst[row][col].shipId	=	src[row][col].shipId;
+		}
+	}
+
 	return;
 }
 
 void run_ai(vector_t* v, vector_t* reefs, board_t** board, dim_t* dim,
-	player_t** players, int extendedShips, int* seed, int aiPlayer) {
-	
-	save_geme_state(v, reefs, board, dim, players, aiPlayer, extendedShips, seed);
-	
-	printf("%s\n %s\n %s\n", STATE_CHAR, "PRINT 0", STATE_CHAR);
+	player_t** players, int* extendedShips, int* seed, int nextPlayer, int* aiPlayer) {
+
+
+	board_t** newBoard = board_init(dim);
+	copy_board(newBoard, board, dim);
+	player_t** newPlayer = (player_t**)malloc(2 * sizeof(player_t*));
+
+	assert(newPlayer != NULL);
+
+	newPlayer[PLAYER_A] = player_init(0, 0, PLAYER_A);
+	newPlayer[PLAYER_B] = player_init(0, 0, PLAYER_B);
+
+	copy_player(newPlayer[PLAYER_A], players[PLAYER_A]);
+	copy_player(newPlayer[PLAYER_B], players[PLAYER_B]);
+
+	//copy_player(newPlayer[*aiPlayer], players[*aiPlayer]);
+
+	newPlayer[*aiPlayer]->isAi = True;
+
+	save_game_state(v, reefs, board, dim, players, nextPlayer, *extendedShips, seed, *aiPlayer);
+
+	printf("%s\n%s\n%s\n", STATE_CHAR, "PRINT 0", STATE_CHAR);
 
 	int cls;
 	int shipId;
-	int shots = 0;
+	//int shots = 0;
 	vector_t aiCommands;
-	
+
 	init(&aiCommands);
 
-	ai_place_all_ships(&aiCommands, board, dim, players[aiPlayer]);
 
-	field_t enemy = ai_search_enemy(board, dim, players[aiPlayer], extendedShips, aiPlayer);
-	
-	if (extendedShips) {
-		while (enemy.x != -1 && enemy.y != -1) {
+	ai_place_all_ships(&aiCommands, newBoard, dim, newPlayer[*aiPlayer]);
+
+	field_t enemy = ai_search_enemy(newBoard, dim, newPlayer[*aiPlayer], *extendedShips, *aiPlayer);
+
+	if (enemy.x == -1 && enemy.y == -1) {
+
+		for (int i = 0; i < TRIES; i++) {
 			// if can shoot, else break
-			ai_shoot(&aiCommands, board, dim, players[aiPlayer], enemy, extendedShips);		// shoot at enemy
-			enemy = ai_search_enemy(board, dim, players[aiPlayer], extendedShips, aiPlayer);
+			ai_move_random_ship(&aiCommands, newBoard, dim, newPlayer[*aiPlayer], *extendedShips);
+			enemy = ai_search_enemy(newBoard, dim, newPlayer[*aiPlayer], *extendedShips, *aiPlayer);
+			break;
 		}
 	}
-	else {
-		ai_shoot(&aiCommands, board, dim, players[aiPlayer], enemy, extendedShips);
+	while (enemy.x != -1 && enemy.y != -1) {
+		ai_shoot(&aiCommands, newBoard, dim, newPlayer, *aiPlayer, enemy, *extendedShips);		// shoot at enemy
+		enemy = ai_search_enemy(newBoard, dim, newPlayer[*aiPlayer], *extendedShips, *aiPlayer);
 	}
+
 	
-	ai_move_random_ship(&aiCommands, board, dim, players[aiPlayer], extendedShips);
+	ai_move_random_ship(&aiCommands, newBoard, dim, newPlayer[*aiPlayer], *extendedShips);
 	
 	print_self(&aiCommands);
 
-	printf("%s\n %s\n %s\n", STATE_CHAR, "PRINT 0", STATE_CHAR);
+	printf("%s\n%s\n%s\n", STATE_CHAR, "PRINT 0", STATE_CHAR);
 
 	return;
 }

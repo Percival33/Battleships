@@ -42,6 +42,9 @@
     <ClCompile Include="ai.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="board_ship_func.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ship.h">
@@ -66,6 +69,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ai.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="board_ship_func.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

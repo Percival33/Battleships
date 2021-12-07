@@ -6,9 +6,6 @@
 #include "player.h"
 #include "board.h"
 
-/*
-	TODO create board_print file
-*/
 
 dim_t* dim_init(int ROWS, int COLS) {
 	dim_t* dim = (dim_t*)malloc(sizeof(dim));
@@ -80,7 +77,7 @@ bool check_around(board_t** board, field_t field, dim_t* dim) {
 
 		int fieldType = board[newY][newX].type;
 
-		if (fieldType >= B_TAKEN && fieldType <= B_DESTROYED) { // check if fieldType is occupied by ship
+		if (B_TAKEN <= fieldType && fieldType < B_DESTROYED) { // check if fieldType is occupied by ship
 			return False;
 		}
 	}

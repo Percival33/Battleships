@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #include "ai.h"
@@ -103,7 +104,7 @@ void handle_player_ends_turn(char command[], int commandId, player_t** players, 
 
 void handle_all_commands(int commandId, int* quit, int* activeCommandType, char command[], 
 	int* nextPlayer, board_t** board, player_t** players, dim_t* dim, int* extendedShips,
-	vector_t* savedCommands, vector_t* reefs, int* seed, int* currentPlayer, int* shots, int* aiPlayer)
+	vector_t* savedCommands, vector_t* reefs, int* seed, int* currentPlayer, int* shots, int* aiPlayer, int* aiMoved)
 {
 
 	switch (commandId) {
@@ -112,8 +113,11 @@ void handle_all_commands(int commandId, int* quit, int* activeCommandType, char 
 			break;
 
 		case C_STATE:
-			if (*aiPlayer != ERROR) {
-				run_ai(savedCommands, reefs, board, dim, players, &currentPlayer, extendedShips, &seed, *aiPlayer);
+			if (*aiPlayer != ERROR && *aiMoved == False) {
+				*extendedShips = True;
+				*aiMoved = True;
+				srand(*seed);
+				run_ai(savedCommands, reefs, board, dim, players, extendedShips, seed, nextPlayer, aiPlayer);
 			}
 			*activeCommandType = C_NULL;
 			break;
@@ -154,6 +158,7 @@ int main() {
 	int seed; 
 	int shots;
 	int aiPlayer;
+	int aiMoved;
 	
 	extendedShips = False;
 	quit = False;
@@ -163,6 +168,7 @@ int main() {
 	seed = DEFAULT_SEED;
 	shots = 0;
 	aiPlayer = ERROR;
+	aiMoved = False;
 	
 	dim_t* dim = dim_init(DEFAULT_ROWS_NUMBER, DEFAULT_COLS_NUMBER);
 	player_t** players = init_players(dim);
@@ -175,6 +181,8 @@ int main() {
 	set_default_fleet(players);
 
 	char command[MAX_COMMAND_LENGTH];
+	
+	//srand(time(NULL));
 
 	while (!quit) {
 		if (fgets(command, MAX_COMMAND_LENGTH - 2, stdin) == NULL)
@@ -184,8 +192,13 @@ int main() {
 			continue;
 		}
 
+
 		commandId = get_command_type(command, activeCommandType);
 
+		/*if (strncmp("SET_AI_PLAYER", command, strlen("SET_AI_PLAYER")) == 0) {
+			srand(seed);
+		}*/
+			
 		if (activeCommandType == C_NULL) {
 			if ((commandId == PLAYER_A || commandId == PLAYER_B)) {
 				if (nextPlayer == PLAYER_A && commandId == PLAYER_A) {
@@ -215,7 +228,7 @@ int main() {
 		else {
 
 			handle_all_commands(commandId, &quit, &activeCommandType, command, &nextPlayer, board,
-				players, dim, &extendedShips, &savedCommands, &reefs, &seed, &currentPlayer, &shots, &aiPlayer);
+				players, dim, &extendedShips, &savedCommands, &reefs, &seed, &currentPlayer, &shots, &aiPlayer, &aiMoved);
 			
 		}
 			

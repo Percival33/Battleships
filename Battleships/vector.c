@@ -1,4 +1,6 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdlib.h>
+#include <string.h>
 #include "vector.h"
 #include "constants.h"
 
@@ -10,7 +12,7 @@ void init(vector_t* v) {
 
 void reallocate(vector_t* v, int new_size) {
 	v->allocated_size = new_size;
-	char* newPtr = (text_t*)malloc(v->allocated_size * sizeof(text_t));
+	text_t* newPtr = (text_t*)malloc(v->allocated_size * sizeof(text_t));
 	memcpy(newPtr, v->ptr, v->count * sizeof(text_t));
 	free(v->ptr);
 	v->ptr = newPtr;
@@ -18,7 +20,7 @@ void reallocate(vector_t* v, int new_size) {
 }
 
 void push_back(vector_t* v, char* command) {
-	if (v->count == v->allocated_size) { // no place for new element
+	if (v->count + 1 == v->allocated_size) { // no place for new element
 		reallocate(v, 2 * v->allocated_size);
 	}
 	text_t text;
@@ -30,6 +32,6 @@ void push_back(vector_t* v, char* command) {
 
 void print_self(vector_t* v) {
 	for (int i = 0; i < v->count; i++) {
-		printf("%s\n", v->ptr[i].text);
+		printf("%s \n", v->ptr[i].text);
 	}
 }
