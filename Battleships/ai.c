@@ -280,7 +280,7 @@ field_t ai_search_enemy(board_t** board, dim_t* dim, player_t* player, int exten
 						enemy = basic_ai_search_enemy(board, dim, aiPlayer);
 					else
 						enemy = extended_ai_search_enemy_from_ship(board, dim, radar, radar, cannon,
-							cls, radarRange, aiPlayer, extendedShips);
+							cls, radarRange, aiPlayer);
 
 					if (enemy.x != -1 && enemy.y != -1) // enemy found
 						return enemy;

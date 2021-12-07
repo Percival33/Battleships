@@ -102,9 +102,8 @@ void handle_player_ends_turn(char command[], int commandId, player_t** players, 
 	return;
 }
 
-void handle_all_commands(int commandId, int* quit, int* activeCommandType, char command[], 
-	int* nextPlayer, board_t** board, player_t** players, dim_t* dim, int* extendedShips,
-	vector_t* savedCommands, vector_t* reefs, int* seed, int* currentPlayer, int* shots, int* aiPlayer, int* aiMoved)
+void handle_all_commands(int commandId, int* quit, int* activeCommandType, char command[], int* nextPlayer, board_t** board,
+	player_t** players, dim_t* dim, int* extendedShips, vector_t* savedCommands, vector_t* reefs, int* seed, int* currentPlayer, int* shots, int* aiPlayer, int* aiMoved)
 {
 
 	switch (commandId) {
@@ -194,10 +193,6 @@ int main() {
 
 		commandId = get_command_type(command, activeCommandType);
 
-		/*if (strncmp("SET_AI_PLAYER", command, strlen("SET_AI_PLAYER")) == 0) {
-			srand(seed);
-		}*/
-			
 		if (activeCommandType == C_NULL) {
 			if ((commandId == PLAYER_A || commandId == PLAYER_B)) {
 				if (nextPlayer == PLAYER_A && commandId == PLAYER_A) {

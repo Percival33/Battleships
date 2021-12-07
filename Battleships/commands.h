@@ -15,7 +15,8 @@ void handle_invalid_command(char command[], int errorType);
 	then calls adequate function to deal with specific command
 */
 void handle_state_commands(char command[], int* nextPlayer, struct board_t** board,
-	struct player_t** players, struct dim_t* dim, int* extendedShips, struct vector_t* v, struct vector_t* reefs, int* seed);
+	struct player_t** players, struct dim_t* dim, int* extendedShips, struct vector_t* v,
+	struct vector_t* reefs, int* seed, int* aiPlayer);
 
 /*
 	function which checks if command is spelled correctly,
