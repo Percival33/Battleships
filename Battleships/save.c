@@ -124,7 +124,7 @@ void save_all_ships_of_player(vector_t* v, player_t* player) {
 void save_reefs(vector_t* v, vector_t* reefs) {
 
     if (reefs->count == 0) {
-        assert(reefs->allocated_size == 1);
+        assert(reefs->allocatedSize == 1);
         return;
     }
 
@@ -137,9 +137,9 @@ void save_reefs(vector_t* v, vector_t* reefs) {
 }
 
 void save_extended_ships(vector_t* v, int extendedShips) {
-    char command[MAX_COMMAND_LENGTH];
 
     if (extendedShips == True) {
+        char command[MAX_COMMAND_LENGTH];
         sprintf(command, "%s", "EXTENDED_SHIPS");
         push_back(v, command);
     }

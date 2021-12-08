@@ -33,7 +33,7 @@ void shoot_default(char command[], struct board_t** board, struct dim_t* dim, st
 void shoot_extended(char command[], struct board_t** board, struct dim_t* dim, struct player_t** players, int playerId);
 
 /*
-	Function counts all remaining parts of ships
+	Function sizes all remaining parts of ships
 */
 int get_remaining_parts(player_t* player);
 

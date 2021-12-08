@@ -96,7 +96,7 @@ void ai_place_all_ships(vector_t* ai, board_t** board, dim_t* dim, player_t* pla
 	}
 }
 
-bool validate_move_command(board_t** board, dim_t* dim, player_t* player, int cls, int shipId, int extendedShips, int moveDir) {
+bool ai_validate_move_command(board_t** board, dim_t* dim, player_t* player, int cls, int shipId, int extendedShips, int moveDir) {
 	if (shipId == ERROR || shipId < 0 || shipId > player->fleet[cls]) {
 		return False;
 	}
@@ -125,7 +125,7 @@ void ai_move_one_ship(vector_t* ai, board_t** board, dim_t* dim, player_t* playe
 		
 		moveDir = rand_range(L, R);							// [L, F, R]
 
-		if (validate_move_command(board, dim, player, cls, shipId, extendedShips, moveDir) == True) {
+		if (ai_validate_move_command(board, dim, player, cls, shipId, extendedShips, moveDir) == True) {
 			foundPlace = True;
 			break;
 		}
@@ -462,6 +462,9 @@ void run_ai(vector_t* v, vector_t* reefs, board_t** board, dim_t* dim,
 	ai_move_random_ship(&aiCommands, newBoard, dim, newPlayer[*aiPlayer], *extendedShips);
 	
 	print_ai(&aiCommands, aiPlayer);
+
+	board_free(newBoard, dim);
+	player_free(newPlayer);
 
 	return;
 }

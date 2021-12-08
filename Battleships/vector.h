@@ -6,7 +6,7 @@ typedef struct text{
 } text_t;
 
 typedef struct {
-	int allocated_size;
+	int allocatedSize;
 	int count;
 	text_t* ptr;
 } vector_t;

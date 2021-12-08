@@ -24,3 +24,13 @@ void handle_state_commands(char command[], int* nextPlayer, struct board_t** boa
 */
 void handle_player_command(char command[], struct board_t** board, struct player_t** players,
 	struct dim_t* dim, int playerId, int* shots, int extendedShips);
+
+void handle_player_ends_turn(char command[], int commandId, struct player_t** players, int* activeCommandType,
+	int* currentPlayer, int* nextPlayer, int* shots);
+
+void handle_all_commands(int commandId, int* quit, int* activeCommandType, char command[], int* nextPlayer,
+	struct board_t** board, struct player_t** players, struct dim_t* dim, int* extendedShips, struct vector_t* savedCommands, struct vector_t* reefs,
+	int* seed, int* currentPlayer, int* shots, int* aiPlayer, int* aiMoved);
+
+void handle_changing_player_type(char command[], int* nextPlayer, int* commandId,
+	int* currentPlayer, int* activeCommandType);

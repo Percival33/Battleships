@@ -22,84 +22,25 @@ void free_memory(board_t** board, dim_t* dim, player_t** players) {
 	player_free(players);
 }
 
-
-void handle_player_ends_turn(char command[], int commandId, player_t** players, int* activeCommandType,
-	int* currentPlayer, int* nextPlayer, int* shots)
+void set_init_values(int* extendedShips, int* quit, int* activeCommandType, 
+	int* nextPlayer, int* seed, int* shots, int* aiPlayer, int* aiMoved)
 {
-	
-	if (*activeCommandType == commandId) {
-		check_winner(players);
-		*activeCommandType = C_NULL;
-		assert(*currentPlayer == PLAYER_A || *currentPlayer == PLAYER_B);
-		*nextPlayer = (*currentPlayer == PLAYER_A ? PLAYER_B : PLAYER_A);
-		*currentPlayer = C_NULL;
-		*shots = 0;
-		clear_moved(players[commandId]);
-		clear_shots(players[commandId]);
-		clear_spies(players[commandId]);
-	}
-	else {
-		handle_invalid_command(command, commandId);
-	}
+	*extendedShips = False;
+	*quit = False;
+	*activeCommandType = C_NULL;
+	*nextPlayer = PLAYER_A;
+	*seed = DEFAULT_SEED;
+	*shots = 0;
+	*aiPlayer = ERROR;
+	*aiMoved = False;
+
 	return;
 }
 
-void handle_all_commands(int commandId, int* quit, int* activeCommandType, char command[], int* nextPlayer,
-	board_t** board, player_t** players, dim_t* dim, int* extendedShips, vector_t* savedCommands, vector_t* reefs,
-	int* seed, int* currentPlayer, int* shots, int* aiPlayer, int* aiMoved)
-{
-
-	switch (commandId) {
-		case C_QUIT:
-			*quit = 1;
-			break;
-
-		case C_STATE:
-			if (*aiPlayer != ERROR && *aiMoved == False) {
-				*aiMoved = True;
-				srand(*seed);
-
-				save_game_state(savedCommands, reefs, board, dim, players, nextPlayer, *extendedShips, seed, *aiPlayer);
-				
-				run_ai(savedCommands, reefs, board, dim, players, extendedShips, seed, nextPlayer, aiPlayer);
-			}
-			*activeCommandType = C_NULL;
-			break;
-
-		case C_STATE_TYPE:
-			handle_state_commands(command, nextPlayer, board, players, dim, extendedShips, savedCommands, reefs, seed, aiPlayer);
-			break;
-
-		case C_PLAYER_TYPE:
-			handle_player_command(command, board, players, dim, *currentPlayer, shots, *extendedShips);
-			break;
-
-		case PLAYER_A:
-			if (*aiPlayer == PLAYER_B) {
-				run_ai(savedCommands, reefs, board, dim, players, extendedShips, seed, nextPlayer, aiPlayer);
-			}
-			handle_player_ends_turn(command, commandId, players, activeCommandType, currentPlayer, nextPlayer, shots);
-			break;
-
-		case PLAYER_B:
-			if (*aiPlayer == PLAYER_A) {
-				run_ai(savedCommands, reefs, board, dim, players, extendedShips, seed, nextPlayer, aiPlayer);
-			}
-			handle_player_ends_turn(command, commandId, players, activeCommandType, currentPlayer, nextPlayer, shots);
-			break;
-
-		case C_INVALID:
-			handle_invalid_command(command, C_INVALID);
-			break;
-	}
-
-	return;
-}
 
 int main() {
 
 	int quit;
-	int event;
 	int commandId;
 	int activeCommandType;
 	int nextPlayer;
@@ -110,15 +51,9 @@ int main() {
 	int aiPlayer;
 	int aiMoved;
 	
-	extendedShips = False;
-	quit = False;
-	event = C_NULL;
-	activeCommandType = C_NULL;
-	nextPlayer = PLAYER_A;
-	seed = DEFAULT_SEED;
-	shots = 0;
-	aiPlayer = ERROR;
-	aiMoved = False;
+	set_init_values(&extendedShips, &quit, &activeCommandType, &nextPlayer, &seed,
+		&shots, &aiPlayer, &aiMoved);
+	
 	
 	dim_t* dim = dim_init(DEFAULT_ROWS_NUMBER, DEFAULT_COLS_NUMBER);
 	player_t** players = init_players(dim);
@@ -132,8 +67,6 @@ int main() {
 
 	char command[MAX_COMMAND_LENGTH];
 	
-	//srand(time(NULL));
-
 	while (!quit) {
 		if (fgets(command, MAX_COMMAND_LENGTH - 2, stdin) == NULL)
 			break;
@@ -142,26 +75,12 @@ int main() {
 			continue;
 		}
 
-
 		commandId = get_command_type(command, activeCommandType);
 
 		if (activeCommandType == C_NULL) {
 			if ((commandId == PLAYER_A || commandId == PLAYER_B)) {
-				if (nextPlayer == PLAYER_A && commandId == PLAYER_A) {
-					activeCommandType = PLAYER_A;
-					currentPlayer = PLAYER_A;
-					nextPlayer = PLAYER_B;
-					continue;
-				}
-				else if (nextPlayer == PLAYER_B && commandId == PLAYER_B) {
-					activeCommandType = PLAYER_B;
-					currentPlayer = PLAYER_B;
-					nextPlayer = PLAYER_A;
-					continue;
-				}
-				else {
-					handle_invalid_command(command, PLAYER_A);
-				}
+				handle_changing_player_type(command, &nextPlayer, &commandId,
+					&currentPlayer, &activeCommandType);
 			}
 			else if (commandId == C_STATE) {
 				activeCommandType = C_STATE;
@@ -172,12 +91,10 @@ int main() {
 			}
 		}
 		else {
-
 			handle_all_commands(commandId, &quit, &activeCommandType, command, &nextPlayer, board,
 				players, dim, &extendedShips, &savedCommands, &reefs, &seed, &currentPlayer, &shots, &aiPlayer, &aiMoved);
 			
 		}
-			
 	}
 
 	free_memory(board, dim, players);

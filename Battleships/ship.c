@@ -12,8 +12,6 @@
 #include "commands.h"
 
 field_t rotate(field_t field, int* dir, int moveDir, int cls) {
-	
-	
 	int newDir = (*dir + moveDir + 4) % 4;
 
 	if (moveDir == F) { // no rotation -> moveDir = F(orward)
@@ -82,10 +80,8 @@ int check_if_ship_can_go(board_t** board, player_t* player, dim_t* dim, int cls,
 	field_t currField = ship.head;
 
 	remove_ship_from_board(board, currField, player, cls, currDir);
-	
 	currField = rotate(currField, &currDir, F, cls);
-
-	is_valid = validate_move(board, dim, ship, player, currField, cls, currDir, shipId);\
+	is_valid = validate_move(board, dim, ship, player, currField, cls, currDir, shipId);
 
 	if (is_valid != True) {
 		add_ship_on_board(board, dim, ship.head, player, cls, ship.direction, shipId);
@@ -98,7 +94,6 @@ int check_if_ship_can_go(board_t** board, player_t* player, dim_t* dim, int cls,
 	}
 
 	currField = rotate(currField, &currDir, moveDir, cls);
-
 	is_valid = validate_move(board, dim, ship, player, currField, cls, currDir, shipId);
 
 	if (is_valid != True) {
@@ -117,19 +112,7 @@ int get_number_of_moves(int cls) {
 	return OTHER_MOVES;
 }
 
-void move(char command[], board_t** board, dim_t* dim, player_t* player, int extendedShips) {
-	//MOVE i C x
-	int shipId;
-	char clsChar[MAX_SHIP_LENGTH];
-	char moveDirChar;
-
-	int argc = sscanf(command, "%*s %d %s %c", &shipId, clsChar, &moveDirChar);
-
-	int cls = get_class(clsChar);
-	int moveDir = get_move_dir(moveDirChar);
-
-	assert(0 <= shipId < MAX_SHIPS_NUMBER);
-
+void validate_move_command(char command[], player_t* player, int argc, int cls, int moveDir, int shipId, int extendedShips) {
 	if (argc != 3) {
 		handle_invalid_command(command, C_INVALID);
 	}
@@ -146,6 +129,24 @@ void move(char command[], board_t** board, dim_t* dim, player_t* player, int ext
 		handle_invalid_command(command, C_SHIP_CANNOT_MOVE);
 	}
 
+	return;
+}
+
+void move(char command[], board_t** board, dim_t* dim, player_t* player, int extendedShips) {
+	//MOVE i C x
+	int shipId;
+	char clsChar[MAX_SHIP_LENGTH];
+	char moveDirChar;
+
+	int argc = sscanf(command, "%*s %d %s %c", &shipId, clsChar, &moveDirChar);
+
+	int cls = get_class(clsChar);
+	int moveDir = get_move_dir(moveDirChar);
+
+	assert(0 <= shipId < MAX_SHIPS_NUMBER);
+
+	validate_move_command(command, player, argc, cls, moveDir, shipId, extendedShips);
+
 	int flag = check_if_ship_can_go(board, player, dim, cls, shipId, moveDir);
 
 	if (flag != True) {
@@ -153,13 +154,4 @@ void move(char command[], board_t** board, dim_t* dim, player_t* player, int ext
 	}
 
 	return;
-	
-	/*
-		1. the ship has not destroyed engine(SHIP CANNOT MOVE),
-		2. the ship is not moving too many times(SHIP MOVED ALREADY),
-		3. the ship is not placed on reef(PLACING SHIP ON REEF),
-		4. the ship not moves out of board (SHIP WENT FROM BOARD),
-		5. the ship is not placed too close to other ships (PLACING SHIP TOO CLOSE TO OTHER SHIP).
-	*/
-
 }

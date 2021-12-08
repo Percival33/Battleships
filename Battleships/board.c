@@ -439,7 +439,10 @@ void set_board_size(char command[], board_t** board, dim_t* dim) {
 	dim_t dim_local = set_dim_size(command);
 	dim->ROWS = dim_local.ROWS;
 	dim->COLS = dim_local.COLS;
-	board = board_init(dim);
+	board_t** newBoard = board_init(dim);
+	board = newBoard;
+	//board = board_init(dim);
+	//memcpy(board, newBoard, dim->ROWS * dim->COLS * sizeof(board_t));
 	return;
 }
 

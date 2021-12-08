@@ -1,4 +1,5 @@
 #include "constants.h"
+#include <string.h>
 
 const char STATE_CHAR[] = "[state]";
 const char PLAYER_A_CHAR[] = "[playerA]";
