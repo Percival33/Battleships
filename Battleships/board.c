@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdlib.h>
+#include <stdio.h>
 #include <assert.h>
 
 #include "constants.h"
@@ -177,9 +178,37 @@ void basic_print(board_t** board, dim_t* dim, player_t* player, int mode) {
 	return;
 }
 
-void extended_print_num_cols_rows(int COLS) {
-	if (COLS > 10) {
+void extended_print_rows_spaces(int ROWS) {
+	if (ROWS >= 100)
+		printf("   ");
+	else if (ROWS > 10)
 		printf("  ");
+	return;
+}
+
+void extended_print_num_cols_rows(int ROWS, int COLS) {
+	if (COLS >= 100) {
+		extended_print_rows_spaces(ROWS);
+		for (int num = 0; num < COLS; num++) {
+			printf("%d", num / 100);
+		}
+		printf("\n");
+
+		extended_print_rows_spaces(ROWS);
+		for (int num = 0; num < COLS; num++) {
+			printf("%d", (num / 10) % 10);
+		}
+		printf("\n");
+
+		extended_print_rows_spaces(ROWS);
+		for (int num = 0; num < COLS; num++) {
+			printf("%d", num % 10);
+		}
+		printf("\n");
+	}
+	else if (COLS > 10) {
+		extended_print_rows_spaces(ROWS);
+
 		for (int num = 0; num < COLS; num++) {
 			printf("%d", num / 10);
 		}
@@ -232,10 +261,13 @@ void extended_print(board_t** board, dim_t* dim, player_t* player, int mode) {
 
 	for (int row = ROW_LOW; row < ROW_HIGH; row++) {
 		if (row == ROW_LOW) {
-			extended_print_num_cols_rows(COL_HIGH);
+			extended_print_num_cols_rows(ROW_HIGH, COL_HIGH);
 		}
 		
-		printf("%02d", row);
+		if (ROW_HIGH >= 100)
+			printf("%03d", row);
+		else if(ROW_HIGH > 10)
+			printf("%02d", row);
 
 		for (int col = COL_LOW; col < COL_HIGH; col++) {
 			if (mode == PLAYER_A) { // print from player's perspective
@@ -440,7 +472,7 @@ void set_board_size(char command[], board_t** board, dim_t* dim) {
 	dim->ROWS = dim_local.ROWS;
 	dim->COLS = dim_local.COLS;
 	board_t** newBoard = board_init(dim);
-	board = newBoard;
+	*board = *newBoard;
 	//board = board_init(dim);
 	//memcpy(board, newBoard, dim->ROWS * dim->COLS * sizeof(board_t));
 	return;

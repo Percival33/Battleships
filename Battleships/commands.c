@@ -169,7 +169,6 @@ void handle_player_command(char command[], board_t** board, player_t** players, 
 	}
 	else if (is_correct_command(command, SPY_CHAR)) {
 		spy(command, board, dim, players, playerId);
-		*shots += 1;
 	}
 	else if (is_correct_command(command, MOVE_CHAR)) {
 		move(command, board, dim, players[playerId], extendedShips);

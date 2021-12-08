@@ -86,6 +86,15 @@ player_t* player_init(int rowLow, int rowHigh, int id) {
 		for (int j = 0; j < MAX_SHIPS_NUMBER; j++) {
 			player->ships[cls][j].created = False;
 			player->ships[cls][j].placed = False;
+			player->ships[cls][j].direction = 0;
+			
+			field_t head;
+			head.x = 0;
+			head.y = 0;
+
+			player->ships[cls][j].head = head;
+			player->ships[cls][j].shots = 0;
+			player->ships[cls][j].spies = 0;
 			player->ships[cls][j].moved = 0;
 			for (int len = 0; len < MAX_SHIP_LENGTH; len++) {
 				player->ships[cls][j].damaged[len] = False;
@@ -340,7 +349,8 @@ void validate_spy_command(char command[], player_t** players, int playerId, int 
 	if (players[playerId]->ships[S_CAR][shipId].damaged[1] == True) { // cannon destroyed
 		handle_invalid_command(command, C_CANNOT_SEND_PLANE);
 	}
-	if (players[playerId]->ships[S_CAR][shipId].spies == S_CAR) { // all spies sent
+	if (players[playerId]->ships[S_CAR][shipId].spies == S_CAR	||
+		players[playerId]->ships[S_CAR][shipId].shots == S_CAR) { // all spies sent
 		handle_invalid_command(command, C_ALL_PLANES_SENT);
 	}
 
@@ -355,6 +365,7 @@ void spy(char command[], board_t** board, dim_t* dim, player_t** players, int pl
 	validate_spy_command(command, players, playerId, argc, shipId);
 
 	players[playerId]->ships[S_CAR][shipId].spies++;
+	players[playerId]->ships[S_CAR][shipId].shots++;
 
 	for (int dir = -1; dir <= NW; dir++) {
 		field_t newTarget = target;
