@@ -56,7 +56,7 @@ void set_reef(char command[], board_t** board, dim_t* dim);
 
 dim_t set_dim_size(char command[]);
 
-void set_board_size(char command[], board_t** board, dim_t* dim);
+//void set_board_size(char command[], board_t** board, dim_t* dim);
 
 void set_init_position(char command[], struct player_t** players, dim_t* dim);
 

@@ -142,6 +142,9 @@ char basic_char_field(board_t** board, int row, int col) {
 	else if (board[row][col].type == B_DESTROYED) {
 		return 'x';
 	}
+	else if (board[row][col].type == B_REEF) {
+		return '#';
+	}
 	return ' ';
 }
 
@@ -160,8 +163,10 @@ void basic_print(board_t** board, dim_t* dim, player_t* player, int mode) {
 				int spy = board[row][col].spy;
 				int playerId = player->id;
 
-				if (spy == playerId		|| spy == B_VISIBLE_BOTH	|| 
-					visible == playerId || visible == B_VISIBLE_BOTH) { // field is visible by spy or radar
+				if (board[row][col].playerId == playerId					||
+					spy == playerId		|| spy == B_VISIBLE_BOTH		|| 
+					visible == playerId || visible == B_VISIBLE_BOTH	||
+					board[row][col].type == B_REEF) { // field is visible by spy or radar
 					printf("%c", basic_char_field(board, row, col));
 				}
 				else {
@@ -183,6 +188,8 @@ void extended_print_rows_spaces(int ROWS) {
 		printf("   ");
 	else if (ROWS > 10)
 		printf("  ");
+	else
+		printf(" ");
 	return;
 }
 
@@ -221,7 +228,7 @@ void extended_print_num_cols_rows(int ROWS, int COLS) {
 	}
 
 	else {
-		printf("  ");
+		extended_print_rows_spaces(ROWS);
 		for (int num = 0; num < COLS; num++) {
 			printf("%d", num);
 		}
@@ -266,8 +273,10 @@ void extended_print(board_t** board, dim_t* dim, player_t* player, int mode) {
 		
 		if (ROW_HIGH >= 100)
 			printf("%03d", row);
-		else if(ROW_HIGH > 10)
+		else if (ROW_HIGH > 10)
 			printf("%02d", row);
+		else
+			printf("%d", row);
 
 		for (int col = COL_LOW; col < COL_HIGH; col++) {
 			if (mode == PLAYER_A) { // print from player's perspective
@@ -275,8 +284,8 @@ void extended_print(board_t** board, dim_t* dim, player_t* player, int mode) {
 				int spy = board[row][col].spy;
 				int playerId = player->id;
 
-				if (spy == playerId || spy == B_VISIBLE_BOTH ||
-					visible == playerId || visible == B_VISIBLE_BOTH) { // field is visible by spy or radar
+				if (board[row][col].playerId == playerId || spy == playerId || spy == B_VISIBLE_BOTH ||
+					visible == playerId || visible == B_VISIBLE_BOTH || board[row][col].type == B_REEF) { // field is visible by spy or radar
 					printf("%c", extended_char_field(board, row, col));
 				}
 				else {
@@ -367,7 +376,7 @@ void add_visible_fields_from_ship(board_t** board, dim_t* dim, player_t* player,
 	field_t head = player->ships[cls][shipId].head;
 	int dir = player->ships[cls][shipId].direction;
 	
-	if (player->ships[cls][shipId].damaged[0] == True) // radar is broken
+	if (player->ships[cls][shipId].damaged[0] == 1) // radar is broken
 		set_visible(board, dim, head, head, 1, player->id); // origin = field, range = 1 
 	else
 		set_visible(board, dim, head, head, cls * cls, player->id); // origin = field, range = class squared
@@ -380,7 +389,7 @@ void add_visible_fields_from_ship(board_t** board, dim_t* dim, player_t* player,
 			head.y += dy[dir];
 		}
 		
-		set_visible(board, dim, head, head, 1, player->id); // mark ship position
+		set_visible(board, dim, head, head, 0, player->id); // mark ship position
 	}
 	return;
 }
@@ -396,6 +405,14 @@ void clear_visible(board_t** board, dim_t* dim) {
 			board[row][col].visible = B_EMPTY;
 		}
 	}
+}
+
+bool is_broken(ship_t ship, int cls) {
+	for (int len = 0; len < cls; len++) {
+		if (ship.damaged[len] == 0)
+			return False;
+	}
+	return True;
 }
 
 void add_visible_fields_on_board(board_t** board, dim_t* dim, player_t* player, int extendedShips) {
@@ -419,7 +436,7 @@ void add_visible_fields_on_board(board_t** board, dim_t* dim, player_t* player, 
 void player_board_print(board_t** board, dim_t* dim, player_t** players, int playerId, int mode, int extendedShips) {
 
 	add_visible_fields_on_board(board, dim, players[playerId], extendedShips);
-
+	
 	if (mode == 0) {
 		basic_print(board, dim, players[playerId], PLAYER_A); // player printing
 	}
@@ -463,20 +480,43 @@ dim_t set_dim_size(char command[]) {
 	return dim;
 }
 
-void set_board_size(char command[], board_t** board, dim_t* dim) {
-	if (dim->ROWS != DEFAULT_COLS_NUMBER && dim->COLS != DEFAULT_COLS_NUMBER) {
-		handle_invalid_command(command, C_INVALID);
+void copy_boards(board_t** dst, board_t** src, dim_t* dim) {
+	const int COL_LOW = 0;
+	const int COL_HIGH = dim->COLS;
+	const int ROW_LOW = 0;
+	const int ROW_HIGH = dim->ROWS;
+
+
+	for (int row = ROW_LOW; row < ROW_HIGH; row++) {
+		for (int col = COL_LOW; col < COL_HIGH; col++) {
+			dst[row][col].type = src[row][col].type;
+			dst[row][col].visible = src[row][col].visible;
+			dst[row][col].visited = src[row][col].visited;
+			dst[row][col].spy = src[row][col].spy;
+			dst[row][col].playerId = src[row][col].playerId;
+			dst[row][col].cls = src[row][col].cls;
+			dst[row][col].shipId = src[row][col].shipId;
+		}
 	}
-	board_free(board, dim);
-	dim_t dim_local = set_dim_size(command);
-	dim->ROWS = dim_local.ROWS;
-	dim->COLS = dim_local.COLS;
-	board_t** newBoard = board_init(dim);
-	*board = *newBoard;
-	//board = board_init(dim);
-	//memcpy(board, newBoard, dim->ROWS * dim->COLS * sizeof(board_t));
+
 	return;
 }
+
+
+//void set_board_size(char command[], board_t** board, dim_t* dim) {
+//	if (dim->ROWS != DEFAULT_COLS_NUMBER && dim->COLS != DEFAULT_COLS_NUMBER) {
+//		handle_invalid_command(command, C_INVALID);
+//	}
+//	board_free(board, dim);
+//	dim_t dim_local = set_dim_size(command);
+//	dim->ROWS = dim_local.ROWS;
+//	dim->COLS = dim_local.COLS;
+//	//board_t** newBoard = board_init(dim);
+//	board = board_init(dim);
+//	//assert(newBoard != NULL);
+//	//copy_board(board, newBoard, dim);
+//	return;
+//}
 
 void set_init_position(char command[], player_t** players, dim_t* dim) {
 	//INIT_POSITION P y1 x1 y2 x2 

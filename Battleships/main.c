@@ -91,7 +91,18 @@ int main() {
 			}
 		}
 		else {
-			handle_all_commands(commandId, &quit, &activeCommandType, command, &nextPlayer, board,
+			if (strncmp(command, "BOARD_SIZE", strlen("BOARD_SIZE")) == 0) {
+				if (dim->ROWS != DEFAULT_COLS_NUMBER && dim->COLS != DEFAULT_COLS_NUMBER) {
+					handle_invalid_command(command, C_INVALID);
+				}
+				board_free(board, dim);
+				dim_t dim_local = set_dim_size(command);
+				dim->ROWS = dim_local.ROWS;
+				dim->COLS = dim_local.COLS;
+				board = board_init(dim);
+			}
+			else
+				handle_all_commands(commandId, &quit, &activeCommandType, command, &nextPlayer, board,
 				players, dim, &extendedShips, &savedCommands, &reefs, &seed, &currentPlayer, &shots, &aiPlayer, &aiMoved);
 			
 		}

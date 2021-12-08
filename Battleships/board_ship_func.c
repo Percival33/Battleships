@@ -50,7 +50,7 @@ void add_ship_on_board(board_t** board, dim_t* dim, field_t field, player_t* pla
                 if (len + 1 == cls) {
                         board[field.y][field.x].type = B_ENGINE;
                 }
-                if (player->ships[cls][shipId].damaged[len] == True)
+                if (player->ships[cls][shipId].damaged[len] == 1)
                         board[field.y][field.x].type = B_DESTROYED;
         }
 

@@ -229,9 +229,9 @@ void handle_state_commands(char command[], int *nextPlayer, board_t** board,
 	else if (is_correct_command(command, NEXT_PLAYER_CHAR)) {
 		*nextPlayer = set_next_player(command);
 	}
-	else if (is_correct_command(command, BOARD_SIZE_CHAR)) {
+	/*else if (is_correct_command(command, BOARD_SIZE_CHAR)) {
 		set_board_size(command, board, dim);
-	}
+	}*/
 	else if (is_correct_command(command, INIT_POSITION_CHAR)) {
 		set_init_position(command, players, dim);
 	}

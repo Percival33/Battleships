@@ -32,7 +32,7 @@ field_t rotate(field_t field, int* dir, int moveDir, int cls) {
 			field.x += (cls - 1);
 			break;
 		case S:
-			field.y += (cls + 1);
+			field.y += (cls - 1);
 			break;
 		case W:
 			field.x -= (cls - 1);
