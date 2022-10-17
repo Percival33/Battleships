@@ -55,6 +55,9 @@ numbers of rows and columns should be printed, e.g. as:
 - [x] Printing (Saving) the state of the game. The program should be able to print commands 
 which allows to reconstruct the state of the game.
 
+Advanced logic:
+
+- [x] implement A.I. which should be able to execute some reasonable strategy. For example, to always move carrier out of the range of other ships, if possible; or to scout the map initially.
 
 ## Commands: 
 
